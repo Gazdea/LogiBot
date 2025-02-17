@@ -1,0 +1,24 @@
+services:
+  # PostgreSQL для приложения
+  postgres_app:
+    container_name: postgres_container_pg
+    image: postgres
+    environment:
+      POSTGRES_USER: logistic
+      POSTGRES_PASSWORD: logistic
+      POSTGRES_DB: logistic
+      PGDATA: /data/postgres
+      volumes:
+        - postgres_app:/data/postgres
+      networks:
+        - benefit_network
+      ports:
+        - "5435:5432"
+      restart: unless-stopped
+
+networks:
+  benefit_network:
+    driver: bridge
+
+volumes:
+  postgres_app:

@@ -1,0 +1,92 @@
+spring:
+  liquibase:
+    enabled: true # Включение Liquibase для управления миграциями базы данных
+    default-schema: logistic_v1 # Используемая схема базы данных по умолчанию
+    clear-checksums: false # Отключение очистки контрольных сумм миграций
+
+  transaction:
+    default-timeout: 30 # Таймаут транзакций в секундах
+    isolation-level: DEFAULT # Уровень изоляции транзакций, например, REPEATABLE_READ/READ_COMMITTED/SERIALIZABLE
+
+  security:
+    user:
+      name: admin # Имя пользователя для базовой авторизации в dev-среде
+      password: secret # Пароль для базовой авторизации в dev-среде
+    oauth2:
+      resource server:
+        jwt:
+          issuer-uri: https://auth.example.com # URL авторизационного сервера для проверки JWT-токенов
+
+  datasource:
+    driver-class-name: org.postgresql.Driver # Драйвер для подключения к PostgreSQL
+    url: ${DB_URL:jdbc:postgresql://localhost:5435/logistic} # URL подключения к базе данных
+    username: ${DB_USERNAME:logistic} # Имя пользователя базы данных
+    password: ${DB_PASSWORD:logistic} # Пароль пользователя базы данных
+    hikari:
+      minimum-idle: 5 # Минимальное количество соединений в пуле
+      maximum-pool-size: 20 # Максимальное количество соединений в пуле
+      idle-timeout: 30000 # Время простоя соединения перед его закрытием (в миллисекундах)
+      max-lifetime: 1800000 # Максимальное время жизни соединения в пуле (в миллисекундах)
+      connection-timeout: 20000 # Максимальное время ожидания соединения из пула (в миллисекундах)
+      pool-name: HikariPool-Logistic # Название пула соединений
+
+  jpa:
+    open-in-view: false # Отключение Open Session in View, чтобы избежать ленивых загрузок после закрытия транзакции
+    show-sql: false # Отключение отображения SQL-запросов в логах
+    properties:
+      hibernate:
+        format_sql: false # Отключение форматирования SQL-запросов
+        generate_statistics: false # Отключение сбора статистики Hibernate для повышения производительности
+        default_schema: logistic_v1 # Схема базы данных по умолчанию
+    hibernate:
+      ddl-auto: none # Отключение автоматического управления схемой базы данных (создание/обновление таблиц)
+
+  cache:
+    type: redis # Тип используемого кэша, например, caffeine, redis, ehcache
+  data:
+    redis:
+      host: ${CACHE_URL:localhost} # Хост Redis
+      port: ${CACHE_PORT:6379} # Порт Redis
+      password: ${CACHE_PASSWORD:logistic} # Пароль Redis
+      timeout: 2000 # Таймаут подключения к Redis (в миллисекундах)
+
+telegrambots:
+  enabled: true # Включение TelegramBots
+  bots:
+    - username: ${TELEGRAM_BOT_USERNAME} # Имя пользователя бота
+      token: ${TELEGRAM_BOT_TOKEN} # Токен доступа бота
+      path: ${TELEGRAM_WEBHOOK_PATH:https://your-server.com/webhook} # URL для вебхука (если используется)
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,beans # Перечень доступных веб-эндпоинтов для мониторинга
+  health:
+    db:
+      enabled: true # Включение проверки состояния базы данных
+    redis:
+      enabled: true # Включение проверки состояния Redis
+  info:
+    app:
+      name: LogisticBot # Название приложения для эндпоинта /actuator/info
+      description: API для логистической компании # Описание приложения для эндпоинта /actuator/info
+
+logging:
+  level:
+    com:
+      zaxxer:
+        hikari: WARN # Логирование сообщений от Hikari на уровне WARN
+    org:
+      telegram: INFO # Логирование сообщений от Telegram на уровне INFO
+      hibernate: WARN # Логирование сообщений от Hibernate на уровне WARN
+      springframework:
+        security: WARN # Логирование сообщений Spring Security на уровне WARN
+  file:
+    name: /logistic # Путь к лог-файлу
+
+springdoc:
+  api-docs:
+    enabled: true # Включение генерации документации OpenAPI
+  swagger-ui:
+    enabled: true # Включение Swagger UI для визуализации документации
