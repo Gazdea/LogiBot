@@ -8,12 +8,9 @@ services:
       POSTGRES_PASSWORD: logistic
       POSTGRES_DB: logistic
       PGDATA: /data/postgres
-      volumes:
-        - postgres_app:/data/postgres
-      networks:
-        - benefit_network
-      ports:
-        - "5435:5432"
+      volumes: postgres_app:/data/postgres
+      networks: benefit_network
+      ports: "5435:5432"
       restart: unless-stopped
 
 networks:
