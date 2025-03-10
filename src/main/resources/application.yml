@@ -1,8 +1,7 @@
 spring:
+
   liquibase:
     enabled: true # Включение Liquibase для управления миграциями базы данных
-    default-schema: logistic_v1 # Используемая схема базы данных по умолчанию
-    clear-checksums: false # Отключение очистки контрольных сумм миграций
 
   transaction:
     default-timeout: 30 # Таймаут транзакций в секундах
@@ -19,7 +18,7 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver # Драйвер для подключения к PostgreSQL
-    url: ${DB_URL:jdbc:postgresql://localhost:5435/logistic} # URL подключения к базе данных
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/logistic} # URL подключения к базе данных
     username: ${DB_USERNAME:logistic} # Имя пользователя базы данных
     password: ${DB_PASSWORD:logistic} # Пароль пользователя базы данных
     hikari:
@@ -40,15 +39,25 @@ spring:
         default_schema: logistic_v1 # Схема базы данных по умолчанию
     hibernate:
       ddl-auto: none # Отключение автоматического управления схемой базы данных (создание/обновление таблиц)
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
   cache:
     type: redis # Тип используемого кэша, например, caffeine, redis, ehcache
   data:
     redis:
-      host: ${CACHE_URL:localhost} # Хост Redis
-      port: ${CACHE_PORT:6379} # Порт Redis
-      password: ${CACHE_PASSWORD:logistic} # Пароль Redis
-      timeout: 2000 # Таймаут подключения к Redis (в миллисекундах)
+      host: ${REDIS_HOST:localhost} # Хост Redis
+      port: ${REDIS_PORT:6379} # Порт Redis
+      password: ${CACHE_PASSWORD:} # Пароль Redis
+      timeout: 100 # Таймаут подключения к Redis (в миллисекундах)
+      database: 0
+
+    mongodb:
+      host: ${MONGO_HOST:localhost}
+      port: ${MONGO_PORT:27017}
+      database: ${MONGO_DATABASE:tables}
+      username: ${MONGO_USERNAME:logistic}
+      password: ${MONGO_PASSWORD:logistic}
+      authentication-database: ${MONGO_AUTH:admin}
 
 telegrambots:
   enabled: true # Включение TelegramBots
