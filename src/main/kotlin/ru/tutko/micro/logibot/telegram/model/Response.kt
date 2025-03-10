@@ -82,5 +82,6 @@ data class WaitForInputResponse(
  * Типы ожидаемого ввода.
  */
 enum class InputType {
+    ORGANIZATION_NAME,
     NAME
 }

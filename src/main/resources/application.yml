@@ -36,7 +36,7 @@ spring:
       hibernate:
         format_sql: false # Отключение форматирования SQL-запросов
         generate_statistics: false # Отключение сбора статистики Hibernate для повышения производительности
-        default_schema: logistic_v1 # Схема базы данных по умолчанию
+        default_schema: public # Схема базы данных по умолчанию
     hibernate:
       ddl-auto: none # Отключение автоматического управления схемой базы данных (создание/обновление таблиц)
     database-platform: org.hibernate.dialect.PostgreSQLDialect

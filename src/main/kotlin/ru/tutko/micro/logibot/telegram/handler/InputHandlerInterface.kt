@@ -5,6 +5,7 @@ import ru.tutko.micro.logibot.telegram.model.InputType
 import ru.tutko.micro.logibot.telegram.model.Response
 
 interface InputHandlerInterface {
-    fun handleInput(update: Update): Response
     fun getInputType(): InputType
+
+    fun handleInput(update: Update): Response
 }

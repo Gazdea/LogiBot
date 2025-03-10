@@ -1,9 +1,7 @@
 package ru.tutko.micro.logibot.telegram.handler.command
 
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
-import ru.tutko.micro.logibot.telegram.annotation.CommandHandler
 import ru.tutko.micro.logibot.telegram.handler.CommandHandlerInterface
 import ru.tutko.micro.logibot.telegram.model.Button
 import ru.tutko.micro.logibot.telegram.model.Response

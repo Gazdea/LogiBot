@@ -4,6 +4,9 @@ plugins {
     id 'org.springframework.boot' version '3.4.2'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.jetbrains.kotlin.plugin.jpa' version '1.9.25'
+    id 'org.jetbrains.kotlin.kapt' version '1.9.25'
+    id("org.jetbrains.kotlin.plugin.noarg") version "1.9.25"
+    id("org.jetbrains.kotlin.plugin.allopen") version "1.9.25"
 }
 
 group = 'ru.tutko.micro'
@@ -30,6 +33,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
 
     // Telegram API
     implementation 'org.telegram:telegrambots-spring-boot-starter:6.9.0'
@@ -37,9 +42,12 @@ dependencies {
     // Kotlin
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
+    implementation("org.jetbrains.kotlin:kotlin-noarg")
+    implementation("org.jetbrains.kotlin:kotlin-allopen")
 
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
@@ -49,14 +57,14 @@ dependencies {
     // База данных
     runtimeOnly 'org.postgresql:postgresql'
 
+    // MapStruct
+    implementation("org.mapstruct:mapstruct:1.5.5.Final")
+
+    kapt("org.mapstruct:mapstruct-processor:1.5.5.Final")
+    kapt("org.hibernate:hibernate-jpamodelgen:6.4.0.Final")
+
     // Работа с Excel/CSV
     implementation 'org.apache.poi:poi-ooxml:5.3.0'
-
-    // MongoDB
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-
-    // Реактивщина
-//    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
 
     // Тестирование
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -72,6 +80,18 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll '-Xjsr305=strict'
     }
+}
+
+kapt {
+    keepJavacAnnotationProcessors = true
+    arguments {
+        arg("mapstruct.defaultComponentModel", "spring")
+        arg("mapstruct.unmappedTargetPolicy", "IGNORE")
+    }
+}
+
+noArg {
+    annotation("jakarta.persistence.Entity")
 }
 
 allOpen {

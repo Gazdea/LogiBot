@@ -98,8 +98,13 @@ class TelegramRequest(
             }
         } else {
             for (handler in commandHandlers) {
+
                 if (handler.handle(update)) {
-                    return handler.getResponse(update)
+                    val response = handler.getResponse(update)
+                    if (response is WaitForInputResponse) {
+                        waitingForInput[response.chatId] = response.inputType
+                    }
+                    return response
                 }
             }
             TextResponse(chatId = chatId, text = "Неизвестная команда")
@@ -131,6 +136,23 @@ class TelegramRequest(
             update.hasEditedMessage() -> update.editedMessage.chatId.toString()
             update.hasEditedChannelPost() -> update.editedChannelPost.chatId.toString()
             update.hasChannelPost() -> update.channelPost.chatId.toString()
+
+            else -> "0"
+        }
+    }
+
+    private fun getUserId(update: Update): String {
+        return when {
+            update.hasMessage() -> update.message.from.id.toString()
+            update.hasCallbackQuery() -> update.callbackQuery.message.from.id.toString()
+            update.hasChatJoinRequest() -> update.chatJoinRequest.user.id.toString()
+            update.hasPoll()-> update.poll.id.toString()
+            update.hasPollAnswer()-> update.pollAnswer.user.id.toString()
+            update.hasPreCheckoutQuery()-> update.preCheckoutQuery.id.toString()
+            update.hasShippingQuery()-> update.shippingQuery.id.toString()
+            update.hasEditedMessage() -> update.editedMessage.from.id.toString()
+            update.hasEditedChannelPost() -> update.editedChannelPost.from.id.toString()
+            update.hasChannelPost() -> update.channelPost.from.id.toString()
 
             else -> "0"
         }
