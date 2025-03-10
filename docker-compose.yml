@@ -1,21 +1,52 @@
 services:
-  # PostgreSQL для приложения
+  # PostgreSQ
   postgres_app:
-    container_name: postgres_container_pg
-    image: postgres
+    container_name: postgres_container
+    image: postgres:latest
     environment:
       POSTGRES_USER: logistic
       POSTGRES_PASSWORD: logistic
       POSTGRES_DB: logistic
       PGDATA: /data/postgres
-      volumes: postgres_app:/data/postgres
-      networks: benefit_network
-      ports: "5435:5432"
-      restart: unless-stopped
+    volumes:
+      - postgres_app:/data/postgres
+    networks:
+     - logistic_network
+    ports:
+     - "5432:5432"
+    restart: unless-stopped
+
+  # MongoDB
+  mongo:
+    image: mongo:latest
+    container_name: mongo_container
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: logistic
+      MONGO_INITDB_ROOT_PASSWORD: logistic
+    networks:
+      - logistic_network
+    volumes:
+      - mongo_data:/data/db
+
+  # Redis
+  redis:
+    container_name: redis_container
+    image: redis:7.4.2-alpine
+    ports:
+      - "6379:6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - logistic_network
+    command: [ "redis-server", "--save", "" ]
 
 networks:
-  benefit_network:
+  logistic_network:
     driver: bridge
 
 volumes:
   postgres_app:
+  mongo_data:
