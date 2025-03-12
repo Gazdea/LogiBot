@@ -1,46 +1,63 @@
 package ru.tutko.micro.logibot.telegram.model
 
+import ru.tutko.micro.logibot.telegram.model.enums.BotCallbackQuery
+import ru.tutko.micro.logibot.telegram.model.enums.BotInput
+
 /**
  * Базовый sealed-класс для различных типов ответов.
  */
-sealed class Response(open val chatId: String)
+sealed class Response(
+    open val chatId: String,
+    open val userId: String,
+    open val clearWaitingForInout: Boolean = false
+)
 
 /**
  * Отправка нового текстового сообщения.
  */
 data class TextResponse(
     override val chatId: String,
+    override val userId: String,
+    override val clearWaitingForInout: Boolean = false,
     val text: String,
     val buttons: List<Button>? = null,
-    val replyOptions: ReplyOptions? = null
-) : Response(chatId)
+    val replyOptions: ReplyOptions? = null,
+) : Response(chatId, userId)
 
+data class CancelWaitingForInputResponse(
+    override val chatId: String,
+    override val userId: String,
+    val text: String,
+) : Response(chatId, userId)
 /**
  * Редактирование уже существующего текстового сообщения.
  */
 data class EditTextResponse(
     override val chatId: String,
+    override val userId: String,
     val messageId: Int,
     val text: String,
     val buttons: List<Button>? = null
-) : Response(chatId)
+) : Response(chatId, userId)
 
 /**
  * Изменение только кнопок без изменения текста сообщения.
  */
 data class EditKeyboardResponse(
     override val chatId: String,
+    override val userId: String,
     val messageId: Int,
     val buttons: List<Button>
-) : Response(chatId)
+) : Response(chatId, userId)
 
 /**
  * Отправка геолокации.
  */
 data class LocationResponse(
     override val chatId: String,
+    override val userId: String,
     val location: Location
-) : Response(chatId)
+) : Response(chatId, userId)
 
 /**
  * Модель кнопки.
@@ -74,14 +91,8 @@ data class ReplyOptions(
  */
 data class WaitForInputResponse(
     override val chatId: String,
+    override val userId: String,
     val text: String,
-    val inputType: InputType
-) : Response(chatId)
-
-/**
- * Типы ожидаемого ввода.
- */
-enum class InputType {
-    ORGANIZATION_NAME,
-    NAME
-}
+    val inputType: BotInput,
+    val buttons: List<Button> = listOf(Button("Отмена", BotCallbackQuery.CANCEL.value)),
+) : Response(chatId, userId)

@@ -34,7 +34,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'org.springframework.boot:spring-boot-starter-logging'
 
     // Telegram API
     implementation 'org.telegram:telegrambots-spring-boot-starter:6.9.0'
@@ -59,7 +60,6 @@ dependencies {
 
     // MapStruct
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
-
     kapt("org.mapstruct:mapstruct-processor:1.5.5.Final")
     kapt("org.hibernate:hibernate-jpamodelgen:6.4.0.Final")
 

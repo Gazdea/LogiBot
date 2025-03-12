@@ -31,4 +31,8 @@ class OrganizationServiceImpl(
         return organizationMapper.toDto(organizationRepository.findById(id).get())
     }
 
+    override fun getOrganizations(): List<OrganizationDto> {
+        return organizationRepository.findAll().stream().map { organization -> organizationMapper.toDto(organization) }.toList()
+    }
+
 }

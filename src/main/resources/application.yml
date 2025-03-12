@@ -83,6 +83,10 @@ management:
 
 logging:
   level:
+    ru:
+      tutko:
+        micro:
+          logibot: DEBUG
     com:
       zaxxer:
         hikari: WARN # Логирование сообщений от Hikari на уровне WARN

@@ -7,4 +7,5 @@ interface OrganizationService {
     fun updateOrganization(organizationDto: OrganizationDto): OrganizationDto?
     fun deleteOrganization(id: Long)
     fun getOrganizationById(id: Long): OrganizationDto?
+    fun getOrganizations(): List<OrganizationDto>
 }

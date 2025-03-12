@@ -1,4 +1,4 @@
-package ru.tutko.micro.logibot.telegram.component
+package ru.tutko.micro.logibot.telegram.telegram_update
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -11,19 +11,20 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import ru.tutko.micro.logibot.telegram.dispatcher.UpdateDispatcher
 import ru.tutko.micro.logibot.telegram.model.*
 
 @Component
 class TelegramBot (
     @Value("\${telegrambots.bots[0].token}") val myBotToken: String,
     @Value("\${telegrambots.bots[0].username}") val myBotUsername: String,
-    private val telegramRequest: TelegramRequest
+    private val updateDispatcher: UpdateDispatcher,
     ) : TelegramLongPollingBot(DefaultBotOptions(), myBotToken) {
 
     override fun getBotUsername(): String = myBotUsername
 
     override fun onUpdateReceived(update: Update) {
-        sendResponse(telegramRequest.processUpdate(update))
+        updateDispatcher.dispatch(update)?.let { sendResponse(it) }
     }
 
     private fun sendResponse(response: Response) {
@@ -33,13 +34,22 @@ class TelegramBot (
             is EditKeyboardResponse -> editMessageReplyMarkup(response)
             is LocationResponse -> sendLocation(response)
             is WaitForInputResponse -> sendWaitForInputResponse(response)
+            is CancelWaitingForInputResponse -> cancelWaitingForInputResponse(response)
         }
+    }
+
+    private fun cancelWaitingForInputResponse(response: CancelWaitingForInputResponse) {
+        execute(SendMessage().apply {
+            chatId = response.chatId
+            text = response.text
+        })
     }
 
     private fun sendWaitForInputResponse(response: WaitForInputResponse) {
         execute(SendMessage().apply {
             chatId = response.chatId
             text = response.text
+            replyMarkup = buildKeyboard(response.buttons)
         })
     }
 
@@ -87,4 +97,5 @@ class TelegramBot (
             }
         })
     }
+
 }
