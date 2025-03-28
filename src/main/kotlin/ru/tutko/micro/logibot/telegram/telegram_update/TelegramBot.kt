@@ -4,15 +4,14 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.DefaultBotOptions
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
-import org.telegram.telegrambots.meta.api.methods.send.SendLocation
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 import ru.tutko.micro.logibot.telegram.dispatcher.UpdateDispatcher
-import ru.tutko.micro.logibot.telegram.model.*
+import ru.tutko.micro.logibot.telegram.exception.*
+import java.io.Serializable
+import java.lang.reflect.InvocationTargetException
 
 @Component
 class TelegramBot (
@@ -24,78 +23,35 @@ class TelegramBot (
     override fun getBotUsername(): String = myBotUsername
 
     override fun onUpdateReceived(update: Update) {
-        updateDispatcher.dispatch(update)?.let { sendResponse(it) }
-    }
-
-    private fun sendResponse(response: Response) {
-        when (response) {
-            is TextResponse -> sendTextMessage(response)
-            is EditTextResponse -> editTextMessage(response)
-            is EditKeyboardResponse -> editMessageReplyMarkup(response)
-            is LocationResponse -> sendLocation(response)
-            is WaitForInputResponse -> sendWaitForInputResponse(response)
-            is CancelWaitingForInputResponse -> cancelWaitingForInputResponse(response)
+        try {
+            updateDispatcher.dispatch(update)?.let { executeAll(it) }
+        } catch (ex: BotException) {
+            handleException(ex, update)
         }
     }
 
-    private fun cancelWaitingForInputResponse(response: CancelWaitingForInputResponse) {
-        execute(SendMessage().apply {
-            chatId = response.chatId
-            text = response.text
-        })
+    fun executeAll(methods: List<BotApiMethod<*>>) {
+        methods.forEach { execute(it as BotApiMethod<Serializable>) }
     }
 
-    private fun sendWaitForInputResponse(response: WaitForInputResponse) {
-        execute(SendMessage().apply {
-            chatId = response.chatId
-            text = response.text
-            replyMarkup = buildKeyboard(response.buttons)
-        })
-    }
+    private fun handleException(ex: Throwable, update: Update? = null) {
+        val botException = when (ex) {
+            is BotException -> ex
+            is InvocationTargetException -> ex.cause as? BotException ?: UnexpectedErrorException("Ошибка выполнения команды", ex)
+            else -> UnexpectedErrorException("Неизвестная ошибка", ex)
+        }
 
-    private fun sendTextMessage(response: TextResponse) {
-        execute(SendMessage().apply {
-            chatId = response.chatId
-            text = response.text
-            replyMarkup = response.buttons?.let { buildKeyboard(it) }
-        })
-    }
+        println("Ошибка: ${botException.message}") // Логирование
 
-    private fun editTextMessage(response: EditTextResponse) {
-        execute(EditMessageText().apply {
-            chatId = response.chatId
-            messageId = response.messageId
-            text = response.text
-            replyMarkup = response.buttons?.let { buildKeyboard(it) }
-        })
-    }
-
-    private fun editMessageReplyMarkup(response: EditKeyboardResponse) {
-        execute(EditMessageReplyMarkup().apply {
-            chatId = response.chatId
-            messageId = response.messageId
-            replyMarkup = buildKeyboard(response.buttons)
-        })
-    }
-
-    private fun sendLocation(response: LocationResponse) {
-        execute(SendLocation().apply {
-            chatId = response.chatId
-            latitude = response.location.latitude
-            longitude = response.location.longitude
-
-        })
-    }
-
-    private fun buildKeyboard(buttons: List<Button>): InlineKeyboardMarkup {
-        return InlineKeyboardMarkup(buttons.chunked(2).map { row ->
-            row.map { button ->
-                InlineKeyboardButton(button.text).apply {
-                    callbackData = button.callbackData
-                    url = button.url
-                }
+        update?.let {
+            val chatId = it.message?.chatId ?: return
+            val errorMessage = SendMessage(chatId.toString(), "Произошла ошибка: ${botException.message}")
+            try {
+                execute(errorMessage)
+            } catch (e: TelegramApiException) {
+                println("Ошибка при отправке сообщения об ошибке: ${e.message}")
             }
-        })
+        }
     }
 
 }

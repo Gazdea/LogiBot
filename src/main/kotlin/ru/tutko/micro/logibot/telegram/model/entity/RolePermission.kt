@@ -11,13 +11,13 @@ open class RolePermission {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "role_permission_id_gen")
     @SequenceGenerator(name = "role_permission_id_gen", sequenceName = "role_permission_id_seq", allocationSize = 1)
     @Column(name = "id", nullable = false)
-    open var id: Long? = null
+    var id: Long? = null
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
-    open var role: Role? = null
+    var role: Role? = null
 
     @Size(max = 100)
     @Column(name = "permission", length = 100)
-    open var permission: String? = null
+    var permission: String? = null
 }

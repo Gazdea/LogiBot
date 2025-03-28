@@ -9,7 +9,7 @@ import java.time.Instant
 
 @Entity
 @Table(name = "table_data_metadata")
-open class TableDataMetadatum {
+class TableDataMetadatum {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_data_metadata_id_gen")
     @SequenceGenerator(
@@ -18,32 +18,38 @@ open class TableDataMetadatum {
         allocationSize = 1
     )
     @Column(name = "id", nullable = false)
-    open var id: Long? = null
+    var id: Long? = null
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "table_id", nullable = false)
-    open var table: ru.tutko.micro.logibot.telegram.model.entity.Table? = null
+    var table: ru.tutko.micro.logibot.telegram.model.entity.Table? = null
 
     @NotNull
     @Column(name = "mongo_document_id", nullable = false, length = Integer.MAX_VALUE)
-    open var mongoDocumentId: String? = null
+    var mongoDocumentId: String? = null
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    open var user: User? = null
-
-    @ColumnDefault("NOW()")
-    @Column(name = "created_at")
-    open var createdAt: Instant? = null
+    var user: User? = null
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "organization_id", nullable = false)
-    open var organization: Organization? = null
+    var organization: Organization? = null
 
     @Size(max = 50)
     @Column(name = "action", length = 50)
-    open var action: String? = null
+    var action: String? = null
+
+    @Column(name = "created_at", updatable = false)
+    var createdAt: Instant? = null
+
+    @PrePersist
+    fun prePersist() {
+        if (createdAt == null) {
+            createdAt = Instant.now()
+        }
+    }
 }

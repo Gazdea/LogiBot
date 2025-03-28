@@ -1,4 +1,4 @@
-package ru.tutko.micro.logibot.telegram.model.dto
+package ru.tutko.micro.logibot.telegram.dto
 
 import jakarta.validation.constraints.Size
 import java.io.Serializable

@@ -1,11 +1,12 @@
 package ru.tutko.micro.logibot.telegram.mapper
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.mapstruct.*
 import org.mapstruct.factory.Mappers
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import ru.tutko.micro.logibot.telegram.model.dto.OrganizationDto
+import ru.tutko.micro.logibot.telegram.dto.OrganizationDto
 import ru.tutko.micro.logibot.telegram.model.entity.Organization
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)

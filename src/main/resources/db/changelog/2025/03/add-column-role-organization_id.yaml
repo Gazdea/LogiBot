@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1741589688168-1
+      author: mikha
+      changes:
+        - addColumn:
+            tableName: role
+            columns:
+              - column:
+                  name: organization_id
+                  constraints:
+                    nullable: true
+        - addUniqueConstraint:
+            tableName: role
+            constraintName: unique_role_organization
+            columnNames: organization_id, id

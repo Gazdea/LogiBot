@@ -7,29 +7,46 @@ import java.time.Instant
 
 @Entity
 @Table(name = "user_organization_links")
-open class UserOrganizationLink {
+class UserOrganizationLink {
     @EmbeddedId
     @SequenceGenerator(
         name = "user_organization_links_id_gen",
         sequenceName = "table_column_id_seq",
         allocationSize = 1
     )
-    open var id: UserOrganizationLinkId? = null
+    var id: UserOrganizationLinkId? = null
 
     @MapsId("userId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    open var user: User? = null
+    var user: User? = null
 
     @MapsId("organizationId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "organization_id", nullable = false)
-    open var organization: Organization? = null
+    var organization: Organization? = null
 
     @Column(name = "role_id")
-    open var roleId: Long? = null
+    var roleId: Long? = null
 
-    @ColumnDefault("NOW()")
-    @Column(name = "joined_at")
-    open var joinedAt: Instant? = null
+    @Column(name = "joined_at", updatable = false)
+    var joinedAt: Instant? = null
+
+    @PrePersist
+    fun prePersist() {
+        if (joinedAt == null) {
+            joinedAt = Instant.now()
+        }
+    }
+
+    override fun toString(): String {
+        return "UserOrganizationLink(" +
+                "id=$id, " +
+                "user=$user, " +
+                "organization=$organization, " +
+                "roleId=$roleId, " +
+                "joinedAt=$joinedAt" +
+                ")"
+    }
+
 }

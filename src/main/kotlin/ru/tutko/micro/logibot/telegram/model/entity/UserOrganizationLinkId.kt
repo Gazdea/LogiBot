@@ -8,14 +8,14 @@ import java.io.Serializable
 import java.util.*
 
 @Embeddable
-open class UserOrganizationLinkId : Serializable {
+class UserOrganizationLinkId : Serializable {
     @NotNull
     @Column(name = "user_id", nullable = false)
-    open var userId: Long? = null
+    var userId: Long? = null
 
     @NotNull
     @Column(name = "organization_id", nullable = false)
-    open var organizationId: Long? = null
+    var organizationId: Long? = null
     override fun hashCode(): Int = Objects.hash(userId, organizationId)
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

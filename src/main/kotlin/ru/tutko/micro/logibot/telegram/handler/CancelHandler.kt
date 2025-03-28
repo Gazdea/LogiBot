@@ -1,34 +1,35 @@
 package ru.tutko.micro.logibot.telegram.handler
 
-import org.springframework.context.annotation.Lazy
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
-import ru.tutko.micro.logibot.telegram.annotation.BotHandlers
-import ru.tutko.micro.logibot.telegram.annotation.CallbackHandler
-import ru.tutko.micro.logibot.telegram.annotation.CommandHandler
-import ru.tutko.micro.logibot.telegram.dispatcher.UpdateDispatcher
+import ru.tutko.micro.logibot.telegram.annotation.Handlers
+import ru.tutko.micro.logibot.telegram.annotation.CallbackMapping
+import ru.tutko.micro.logibot.telegram.annotation.CommandMapping
+import ru.tutko.micro.logibot.telegram.model.Request
 import ru.tutko.micro.logibot.telegram.model.Response
-import ru.tutko.micro.logibot.telegram.model.TextResponse
-import ru.tutko.micro.logibot.telegram.model.enums.BotCallbackQuery
-import ru.tutko.micro.logibot.telegram.model.enums.BotCommand
+import ru.tutko.micro.logibot.telegram.model.enums.mapping.CallbackQueryEnum
+import ru.tutko.micro.logibot.telegram.model.enums.mapping.CommandEnum
 
-@BotHandlers
+@Handlers
 class CancelHandler() {
 
-    @CommandHandler(BotCommand.CANCEL)
-    fun handleCommandCancel(update: Update): Response {
-        val chatId = update.message?.chatId.toString()
-        val userId = update.message?.from?.id.toString()
-        val chatIdUserId = "$chatId:$userId"
-
-        return TextResponse(chatId, userId, text = "Ожидание ввода отменено.", clearWaitingForInout = true )
+    @CommandMapping(CommandEnum.CANCEL)
+    fun handleCommandCancel(request: Request): Response {
+        return Response(
+            clearWaitingForInput = true,
+            botApiMethods = listOf(SendMessage().apply {
+                chatId = request.chatId.toString()
+                text = "Ожидание ввода отменено." }),
+            )
     }
 
-    @CallbackHandler(BotCallbackQuery.CANCEL)
-    fun handleCallbackCancel(update: Update): Response {
-        val chatId = update.callbackQuery.message?.chatId.toString()
-        val userId = update.callbackQuery.from?.id.toString()
-        val chatIdUserId = "$chatId:$userId"
-
-        return TextResponse(chatId, userId, text = "Ожидание ввода отменено.", clearWaitingForInout = true )
+    @CallbackMapping(CallbackQueryEnum.CANCEL)
+    fun handleCallbackCancel(request: Request): Response {
+        return Response(
+            clearWaitingForInput = true,
+            botApiMethods = listOf(SendMessage().apply {
+                chatId =  request.chatId.toString()
+                text = "Ожидание ввода отменено."}),
+            )
     }
 }
