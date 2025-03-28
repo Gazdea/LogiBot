@@ -1,4 +1,4 @@
-package ru.tutko.micro.logibot.telegram.annotation
+package ru.tutko.micro.logibot.telegram.annotation.mapping
 
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.ChatMemberEnum
 

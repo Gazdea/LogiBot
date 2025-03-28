@@ -1,10 +1,12 @@
 package ru.tutko.micro.logibot.telegram.handler
 
-import TelegramSerializeUtil
 import org.telegram.telegrambots.meta.api.methods.send.SendLocation
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import ru.tutko.micro.logibot.telegram.annotation.*
+import ru.tutko.micro.logibot.telegram.annotation.mapping.CallbackMapping
+import ru.tutko.micro.logibot.telegram.annotation.mapping.CommandMapping
+import ru.tutko.micro.logibot.telegram.annotation.mapping.InputMapping
 import ru.tutko.micro.logibot.telegram.exception.BotException
 import ru.tutko.micro.logibot.telegram.model.*
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.CallbackQueryEnum

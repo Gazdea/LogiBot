@@ -2,8 +2,8 @@ package ru.tutko.micro.logibot.telegram.handler
 
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import ru.tutko.micro.logibot.telegram.annotation.Handlers
-import ru.tutko.micro.logibot.telegram.annotation.CallbackMapping
-import ru.tutko.micro.logibot.telegram.annotation.CommandMapping
+import ru.tutko.micro.logibot.telegram.annotation.mapping.CallbackMapping
+import ru.tutko.micro.logibot.telegram.annotation.mapping.CommandMapping
 import ru.tutko.micro.logibot.telegram.model.Response
 import ru.tutko.micro.logibot.telegram.dto.OrganizationDto
 import ru.tutko.micro.logibot.telegram.model.CallbackData

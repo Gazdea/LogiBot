@@ -1,11 +1,11 @@
 package ru.tutko.micro.logibot.telegram.dispatcher
 
-import TelegramSerializeUtil
+import ru.tutko.micro.logibot.telegram.component.TelegramSerialize
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod
 import org.telegram.telegrambots.meta.api.objects.Update
-import ru.tutko.micro.logibot.telegram.annotation.*
+import ru.tutko.micro.logibot.telegram.annotation.mapping.*
 import ru.tutko.micro.logibot.telegram.component.WaitingForInputContextStorage
 import ru.tutko.micro.logibot.telegram.filter.ResponseValidationFilter
 import ru.tutko.micro.logibot.telegram.model.Request
@@ -40,7 +40,7 @@ class UpdateDispatcher(
             chatId,
             userId,
             update,
-            TelegramSerializeUtil.extractData(update, handlerType, waitingForInputContextStorage.get(chatIdUserId))
+            TelegramSerialize.extractData(update, handlerType, waitingForInputContextStorage.get(chatIdUserId))
         )
 
         return handlerMethods

@@ -4,6 +4,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.tutko.micro.logibot.telegram.annotation.*
+import ru.tutko.micro.logibot.telegram.annotation.mapping.*
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.declaredMemberFunctions
 import kotlin.reflect.full.hasAnnotation

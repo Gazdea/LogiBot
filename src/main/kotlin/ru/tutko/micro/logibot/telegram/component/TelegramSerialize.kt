@@ -1,10 +1,12 @@
+package ru.tutko.micro.logibot.telegram.component
+
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.tutko.micro.logibot.telegram.model.CallbackData
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.HandlerTypeEnum
 
-class TelegramSerializeUtil {
+class TelegramSerialize {
 	companion object {
 
 		fun extractData(

@@ -1,6 +1,6 @@
 package ru.tutko.micro.logibot.telegram.util
 
-import TelegramSerializeUtil
+import ru.tutko.micro.logibot.telegram.component.TelegramSerialize
 import org.telegram.telegrambots.meta.api.objects.Chat
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -32,7 +32,7 @@ class TelegramUtil {
                 keyboard = buttons.map { (text, callback) ->
                     listOf(InlineKeyboardButton().apply {
                         this.text = text
-                        this.callbackData = TelegramSerializeUtil.serializeData(callback)
+                        this.callbackData = TelegramSerialize.serializeData(callback)
                     })
                 }
             }
@@ -44,7 +44,7 @@ class TelegramUtil {
                     row.map { (text, callback) ->
                         InlineKeyboardButton().apply {
                             this.text = text
-                            this.callbackData = TelegramSerializeUtil.serializeData(callback)
+                            this.callbackData = TelegramSerialize.serializeData(callback)
                         }
                     }
                 }
