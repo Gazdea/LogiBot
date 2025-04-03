@@ -1,18 +1,20 @@
 package ru.tutko.micro.logibot.telegram.model.enums.role
 
-enum class TablePermissionAccessEnum(val value: String) {
-    CREATE_REPORT("CREATE_REPORT"),  // имеет право создавать отчёты по таблице
-    VIEW_TABLE("VIEW_TABLE"),  // имеет право просматривать таблицу
-    FILL_TABLE("FILL_TABLE"),  // имеет право заполнять таблицу
-    EDIT_TABLE("EDIT_TABLE"),  // имеет право изменять таблицу
-    DELETE_TABLE("DELETE_TABLE"),  // имеет право удалять таблицу или её данные
-    EXPORT_TABLE("EXPORT_TABLE"),  // имеет право экспортировать данные таблицы
-    IMPORT_TABLE("IMPORT_TABLE"),  // имеет право импортировать данные в таблицу
-    MANAGE_TABLE_PERMISSIONS("MANAGE_TABLE_PERMISSIONS"),  // имеет право управлять правами доступа к таблице
-    ARCHIVE_TABLE("ARCHIVE_TABLE"),  // имеет право архивировать таблицу или её данные
-    VIEW_METADATA("VIEW_METADATA"),  // имеет право просматривать метаданные таблицы
-    BACKUP_TABLE("BACKUP_TABLE"),  // имеет право делать резервные копии таблицы
-    RESTORE_TABLE("RESTORE_TABLE"),  // имеет право восстанавливать таблицу из резервной копии
-    PUBLISH_TABLE("PUBLISH_TABLE"),  // имеет право публиковать данные из таблицы
-    CONFIGURE_TABLE("CONFIGURE_TABLE")  // имеет право на настройку таблицы (например, изменение структуры)
+enum class TablePermissionAccessEnum() {
+    CREATE_REPORT,  // имеет право создавать отчёты по таблице
+    VIEW_TABLE,  // имеет право просматривать таблицу
+    FILL_TABLE,  // имеет право заполнять таблицу
+    EDIT_TABLE,  // имеет право изменять таблицу
+    DELETE_TABLE,  // имеет право удалять таблицу или её данные
+    EXPORT_TABLE,  // имеет право экспортировать данные таблицы
+    IMPORT_TABLE,  // имеет право импортировать данные в таблицу
+    MANAGE_TABLE_PERMISSIONS,  // имеет право управлять правами доступа к таблице
+    ARCHIVE_TABLE,  // имеет право архивировать таблицу или её данные
+    VIEW_METADATA,  // имеет право просматривать метаданные таблицы
+    BACKUP_TABLE,  // имеет право делать резервные копии таблицы
+    RESTORE_TABLE,  // имеет право восстанавливать таблицу из резервной копии
+    PUBLISH_TABLE,  // имеет право публиковать данные из таблицы
+    CONFIGURE_TABLE,  // имеет право на настройку таблицы (например, изменение структуры)
+
+    NULL
 }

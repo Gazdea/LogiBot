@@ -1,6 +1,6 @@
 package ru.tutko.micro.logibot.telegram.service
 
-import ru.tutko.micro.logibot.telegram.dto.UserDto
+import ru.tutko.micro.logibot.telegram.model.dto.UserDto
 import java.util.*
 
 interface UserService {

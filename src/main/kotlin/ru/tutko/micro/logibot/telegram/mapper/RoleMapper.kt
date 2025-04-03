@@ -1,21 +1,19 @@
 package ru.tutko.micro.logibot.telegram.mapper
 
 import org.mapstruct.*
-import ru.tutko.micro.logibot.telegram.dto.RoleDto
+import ru.tutko.micro.logibot.telegram.model.dto.RoleDto
 import ru.tutko.micro.logibot.telegram.model.entity.Role
 
-@Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(
+	unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING,
+	uses = [OrganizationMapper::class]
+)
 abstract class RoleMapper {
 
-    @AfterMapping
-    fun linkRolePermissions(@MappingTarget role: Role) {
-        role.rolePermissions.forEach { it.role = role }
-    }
+	abstract fun toEntity(roleDto: RoleDto): Role
 
-    abstract fun toEntity(roleDto: RoleDto): Role
+	abstract fun toDto(role: Role): RoleDto
 
-    abstract fun toDto(role: Role): RoleDto
-
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    abstract fun partialUpdate(roleDto: RoleDto, @MappingTarget role: Role): Role
+	@BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+	abstract fun partialUpdate(roleDto: RoleDto, @MappingTarget role: Role): Role
 }

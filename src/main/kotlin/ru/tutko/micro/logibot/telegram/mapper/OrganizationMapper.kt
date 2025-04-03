@@ -1,23 +1,21 @@
 package ru.tutko.micro.logibot.telegram.mapper
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.mapstruct.*
-import org.mapstruct.factory.Mappers
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Component
-import ru.tutko.micro.logibot.telegram.dto.OrganizationDto
+import ru.tutko.micro.logibot.telegram.model.dto.OrganizationDto
 import ru.tutko.micro.logibot.telegram.model.entity.Organization
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING,
+	uses = [ChatMapper::class, DataTableMapper::class, RoleMapper::class, RoleOrganizationPermissionMapper::class, UserOrganizationLinkMapper::class]
+)
 abstract class OrganizationMapper {
 
-    @Mapping(source = "name", target = "name")
-    abstract fun toEntity(organizationDto: OrganizationDto): Organization
+	abstract fun toEntity(organizationDto: OrganizationDto): Organization
 
-    @Mapping(source = "name", target = "name")
-    abstract fun toDto(organization: Organization): OrganizationDto
+	abstract fun toDto(organization: Organization): OrganizationDto
 
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    abstract fun partialUpdate(organizationDto: OrganizationDto, @MappingTarget organization: Organization)
+	@BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+	abstract fun partialUpdate(
+		organizationDto: OrganizationDto,
+		@MappingTarget organization: Organization
+	): Organization
 }

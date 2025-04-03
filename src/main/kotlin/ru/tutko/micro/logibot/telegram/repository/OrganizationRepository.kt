@@ -1,14 +1,16 @@
 package ru.tutko.micro.logibot.telegram.repository
 
+import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.query.Param
-import ru.tutko.micro.logibot.telegram.dto.OrganizationDto
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import ru.tutko.micro.logibot.telegram.model.entity.Organization
+import ru.tutko.micro.logibot.telegram.model.info.OrganizationInfo
 import java.util.*
 
-interface OrganizationRepository : JpaRepository<Organization, Long> {
+interface OrganizationRepository : JpaRepository<Organization, Long>, JpaSpecificationExecutor<Organization> {
 
-    fun findByUserOrganizationLinks_User_UserId(userId: Long): MutableList<Organization>
+	@EntityGraph(attributePaths = ["userOrganizationLinks", "chats", "dataTables", "roles", "roleOrganizationPermissions", "userOrganizationLinks"])
+	fun findByUserOrganizationLinks_User_ExternalUserId(externalUserId: Long): List<OrganizationInfo>
 
+	fun findInfoById(id: Long): Optional<OrganizationInfo>
 }

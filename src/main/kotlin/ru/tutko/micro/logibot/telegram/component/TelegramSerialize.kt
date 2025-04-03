@@ -31,13 +31,11 @@ class TelegramSerialize {
 
 		fun serializeData(callbackData: CallbackData): String {
 			val encode = Json.encodeToString(callbackData)
-			println(encode)
 			return encode
 		}
 
 		private fun deserializeData(data: String): CallbackData {
 			val decode = Json.decodeFromString<CallbackData>(data)
-			println(decode)
 			return decode
 		}
 	}

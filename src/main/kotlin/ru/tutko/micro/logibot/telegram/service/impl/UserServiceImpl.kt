@@ -2,7 +2,7 @@ package ru.tutko.micro.logibot.telegram.service.impl
 
 import org.springframework.stereotype.Service
 import ru.tutko.micro.logibot.telegram.mapper.UserMapper
-import ru.tutko.micro.logibot.telegram.dto.UserDto
+import ru.tutko.micro.logibot.telegram.model.dto.UserDto
 import ru.tutko.micro.logibot.telegram.repository.UserRepository
 import ru.tutko.micro.logibot.telegram.service.UserService
 import java.util.*
@@ -17,7 +17,7 @@ class UserServiceImpl(
     }
 
     override fun getUserByUserId(userId: Long): Optional<UserDto> {
-        return userRepository.findByUserId(userId).map { userMapper.toDto(it) }
+        return userRepository.findByExternalUserId(userId).map { userMapper.toDto(it) }
     }
 
     override fun getUserByUsername(username: String): Optional<UserDto> {
@@ -38,7 +38,7 @@ class UserServiceImpl(
     }
 
     override fun createIfNotExists(user: UserDto): UserDto {
-        val existingUser = userRepository.findByUserId(user.userId!!).orElse(null)
+        val existingUser = userRepository.findByExternalUserId(user.externalUserId!!).orElse(null)
 
         return if(existingUser == null){
             userMapper.toDto(userRepository.save(userMapper.toEntity(user)))
@@ -48,6 +48,6 @@ class UserServiceImpl(
     }
 
     override fun exists(userId: Long): Boolean {
-        return userRepository.existsByUserId(userId)
+        return userRepository.existsByExternalUserId(userId)
     }
 }

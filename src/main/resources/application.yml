@@ -82,21 +82,18 @@ management:
       description: API для логистической компании # Описание приложения для эндпоинта /actuator/info
 
 logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %highlight(%-5level) %cyan(%logger{36}) - %msg%n"
   level:
-    ru:
-      tutko:
-        micro:
-          logibot: DEBUG
-    com:
-      zaxxer:
-        hikari: WARN # Логирование сообщений от Hikari на уровне WARN
-    org:
-      telegram: INFO # Логирование сообщений от Telegram на уровне INFO
-      hibernate: WARN # Логирование сообщений от Hibernate на уровне WARN
-      springframework:
-        security: WARN # Логирование сообщений Spring Security на уровне WARN
+    ru.tutko.micro.logibot.telegram.dispatcher.UpdateDispatcher: INFO
+    root: INFO  # Уровень логирования по умолчанию
+    ru.tutko.micro.logibot: DEBUG  # Детальное логирование для проекта
+    com.zaxxer.hikari: WARN  # Логирование HikariCP на уровне WARN
+    org.telegram: INFO  # Telegram API
+    org.hibernate: WARN  # Hibernate
+    org.springframework.security: WARN  # Spring Security
   file:
-    name: /logistic # Путь к лог-файлу
+    name: /var/log/logistic-bot.log  # Полный путь к файлу логов
 
 springdoc:
   api-docs:

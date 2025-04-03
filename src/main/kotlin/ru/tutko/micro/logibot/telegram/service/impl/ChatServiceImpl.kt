@@ -1,9 +1,10 @@
 package ru.tutko.micro.logibot.telegram.service.impl
 
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import ru.tutko.micro.logibot.telegram.mapper.ChatMapper
-import ru.tutko.micro.logibot.telegram.dto.ChatDto
-import ru.tutko.micro.logibot.telegram.dto.request.FindOrMigrateChatDtoRequest
+import ru.tutko.micro.logibot.telegram.model.dto.ChatDto
+import ru.tutko.micro.logibot.telegram.model.dto.request.FindOrMigrateChatDtoRequest
 import ru.tutko.micro.logibot.telegram.repository.ChatRepository
 import ru.tutko.micro.logibot.telegram.service.ChatService
 import java.util.*
@@ -21,8 +22,8 @@ class ChatServiceImpl(
         return chatRepository.findById(id).map { chatMapper.toDto(it) }
     }
 
-    override fun getChatsByOrganizationId(organizationId: Long): MutableList<ChatDto> {
-        return chatRepository.findByOrganization_Id(organizationId).map { chatMapper.toDto(it) }.toMutableList()
+    override fun getChatsByOrganizationId(organizationId: Long): List<ChatDto> {
+        return chatRepository.findByOrganization_Id(organizationId).map { chatMapper.toDto(it) }
     }
 
     override fun createChat(chat: ChatDto): ChatDto {
@@ -37,24 +38,25 @@ class ChatServiceImpl(
         chatRepository.deleteById(chatId)
     }
 
+    @Transactional
     override fun findOrMigrateChat(chatMigrateDto: FindOrMigrateChatDtoRequest): Optional<ChatDto> {
-        val existingChat = chatRepository.findByChatId(chatMigrateDto.chatId!!).orElse(null)
-        val oldChat = chatMigrateDto.fromChatId?.let { chatRepository.findByChatId(it).orElse(null) }
+        val existingChat = chatRepository.findByExternalChatId(chatMigrateDto.chatId!!).orElse(null)
+        val oldChat = chatMigrateDto.fromChatId?.let { chatRepository.findByExternalChatId(it).orElse(null) }
 
         return when {
             existingChat != null -> Optional.of(chatMapper.toDto(existingChat))
 
             oldChat != null && chatMigrateDto.toChatId != null -> {
-                oldChat.chatId = chatMigrateDto.toChatId
+                oldChat.externalChatId = chatMigrateDto.toChatId
                 Optional.of(chatMapper.toDto(chatRepository.save(oldChat)))
             }
 
-            else -> Optional.of(chatMapper.toDto(chatRepository.save(chatMapper.migrateDtoToEntity(chatMigrateDto))))
+            else -> Optional.empty()
         }
     }
 
     override fun exists(chatId: Long): Boolean {
-        return chatRepository.existsByChatId(chatId)
+        return chatRepository.existsByExternalChatId(chatId)
     }
 
 }

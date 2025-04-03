@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
-import ru.tutko.micro.logibot.telegram.dto.UserDto
+import ru.tutko.micro.logibot.telegram.model.dto.UserDto
 import ru.tutko.micro.logibot.telegram.model.entity.User
 import ru.tutko.micro.logibot.telegram.utils.DtoTestBuilder
 import ru.tutko.micro.logibot.telegram.utils.EntityTestBuilder
