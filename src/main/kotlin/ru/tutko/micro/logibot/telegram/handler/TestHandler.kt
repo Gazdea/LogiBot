@@ -1,5 +1,6 @@
 package ru.tutko.micro.logibot.telegram.handler
 
+import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendLocation
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
@@ -7,12 +8,14 @@ import ru.tutko.micro.logibot.telegram.annotation.*
 import ru.tutko.micro.logibot.telegram.annotation.mapping.CallbackMapping
 import ru.tutko.micro.logibot.telegram.annotation.mapping.CommandMapping
 import ru.tutko.micro.logibot.telegram.annotation.mapping.InputMapping
-import ru.tutko.micro.logibot.telegram.exception.BotException
+import ru.tutko.micro.logibot.telegram.exception.NotFoundException
+import ru.tutko.micro.logibot.telegram.exception.ValidationException
 import ru.tutko.micro.logibot.telegram.model.*
+import ru.tutko.micro.logibot.telegram.model.data.TestData
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.CallbackQueryEnum
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.CommandEnum
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.InputEnum
-import ru.tutko.micro.logibot.telegram.util.TelegramUtil
+import ru.tutko.micro.logibot.telegram.util.UpdateUtil
 import kotlin.random.Random
 
 @Handlers
@@ -25,7 +28,7 @@ class TestHandler
             botApiMethods = listOf(SendMessage().apply {
                 chatId = request.update.message.chatId.toString()
                 text = "Проверка работоспособности"
-                replyMarkup = TelegramUtil.createInlineKeyboard(
+                replyMarkup = UpdateUtil.createInlineKeyboard(
                     listOf(
                         "Проверка input" to CallbackData(CallbackQueryEnum.TEST_INPUT),
                         "Проверка карт" to CallbackData(CallbackQueryEnum.TEST_MAP),
@@ -41,8 +44,9 @@ class TestHandler
     fun testCallback(request: Request): Response {
         val rndInt = Random.nextInt(1, 100)
         val rndLong = Random.nextLong(1, 100)
+        val testData = TestData(rndInt, rndLong)
         return Response(
-            inputType = CallbackData(InputEnum.TEST, "rndInt" to rndInt, "rndLong" to rndLong),
+            inputType = CallbackData(InputEnum.TEST, testData),
             botApiMethods = listOf(
                 SendMessage().apply {
                 chatId = request.chatId.toString()
@@ -54,13 +58,12 @@ class TestHandler
 
     @InputMapping(InputEnum.TEST)
     fun testInput(request: Request): Response {
-        val rndInt = request.data?.data?.get("rndInt")
-        val rndLong = request.data?.data?.get("rndLong")
+        val testData = request.data?.getData<TestData>() ?: throw ValidationException("Не найдены TestData")
         return Response(
             clearWaitingForInput = true,
             botApiMethods = listOf(SendMessage().apply {
                 chatId = request.chatId.toString()
-                text = "я прочитал ${request.update.message.text} int: $rndInt long: $rndLong"
+                text = "я прочитал ${request.update.message.text} int: ${testData.rndInt} long: ${testData.rndLong}"
             }),
         )
     }
@@ -89,6 +92,6 @@ class TestHandler
 
     @CommandMapping(CommandEnum.TEST_EXCEPTION)
     fun testException(request: Request): Response {
-        throw BotException("ошибОчка")
+        throw NotFoundException()
     }
 }

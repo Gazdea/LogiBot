@@ -2,6 +2,7 @@ package ru.tutko.micro.logibot.telegram.utils
 
 import org.springframework.stereotype.Component
 import ru.tutko.micro.logibot.telegram.dto.*
+import ru.tutko.micro.logibot.telegram.model.dto.*
 import ru.tutko.micro.logibot.telegram.model.enums.ChatTypeEnum
 import ru.tutko.micro.logibot.telegram.model.enums.role.DefaultRoleEnum
 import ru.tutko.micro.logibot.telegram.model.enums.role.PermissionAccessEnum

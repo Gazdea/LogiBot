@@ -14,4 +14,11 @@ enum class CallbackQueryEnum(val value: String) {
     BOT_JOIN_ADD_ORGANIZATION("botJoinAddOrganization"),
 
     GET_ORGANIZATION("getOrganization"),
+
+    SET_CHAT_ORGANIZATION("setChatOrganization"),
+    SET_CHAT_CREATE_ORGANIZATION("setChatCreateOrganization"),
+
+    PAGINATE_ORGANIZATIONS("paginateOrganizations"),
+
+    PAGINATE_SET_CHAT_ORGANIZATION("paginateSetChatOrganization"),
 }

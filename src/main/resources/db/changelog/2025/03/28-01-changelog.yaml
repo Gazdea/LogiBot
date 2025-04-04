@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1743164589721-1
+      author: Mikhail Tutko
+      changes:
+        - addPrimaryKey:
+            tableName: role_organization_permission
+            columnNames: role_id, organization_id
+
+  - changeSet:
+      id: 1743164671784-2
+      author: Mikhail Tutko
+      changes:
+        - addPrimaryKey:
+            tableName: role_table_permission
+            columnNames: role_id, table_id

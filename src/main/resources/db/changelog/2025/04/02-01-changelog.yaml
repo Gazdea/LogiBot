@@ -1,0 +1,56 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1743582652927-1
+      author: mikha
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createSequence:
+            incrementBy: 1
+            sequenceName: organization_settings_id_seq
+            startValue: 1
+  - changeSet:
+      id: 1743582652927-2
+      author: mikha
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_organization_settings
+                  name: id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: organization_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: setting_key
+                  type: VARCHAR(100)
+              - column:
+                  name: setting_value
+                  type: VARCHAR(255)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+            tableName: organization_settings
+  - changeSet:
+      id: 1743582652927-3
+      author: mikha
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: organization_id
+            baseTableName: organization_settings
+            constraintName: FK_ORGANIZATION_SETTINGS_ON_ORGANIZATION
+            referencedColumnNames: id
+            referencedTableName: organization
+

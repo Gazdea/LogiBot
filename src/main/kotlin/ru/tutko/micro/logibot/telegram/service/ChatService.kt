@@ -1,8 +1,8 @@
 package ru.tutko.micro.logibot.telegram.service
 
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod
-import ru.tutko.micro.logibot.telegram.dto.ChatDto
-import ru.tutko.micro.logibot.telegram.dto.request.FindOrMigrateChatDtoRequest
+import ru.tutko.micro.logibot.telegram.model.dto.ChatDto
+import ru.tutko.micro.logibot.telegram.model.dto.request.FindOrMigrateChatDtoRequest
 
 import java.util.*
 
@@ -11,7 +11,7 @@ interface ChatService {
 
     fun getChatById(id: Long): Optional<ChatDto>
 
-    fun getChatsByOrganizationId(organizationId: Long): MutableList<ChatDto>
+    fun getChatsByOrganizationId(organizationId: Long): List<ChatDto>
 
     fun createChat(chat: ChatDto): ChatDto
 
