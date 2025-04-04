@@ -17,4 +17,8 @@ enum class CallbackQueryEnum(val value: String) {
 
     SET_CHAT_ORGANIZATION("setChatOrganization"),
     SET_CHAT_CREATE_ORGANIZATION("setChatCreateOrganization"),
+
+    PAGINATE_ORGANIZATIONS("paginateOrganizations"),
+
+    PAGINATE_SET_CHAT_ORGANIZATION("paginateSetChatOrganization"),
 }

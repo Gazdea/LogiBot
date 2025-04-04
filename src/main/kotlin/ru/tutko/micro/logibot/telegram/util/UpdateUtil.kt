@@ -23,7 +23,21 @@ class UpdateUtil(private val update: Update) {
 			}
 		}
 
+
 		fun createInlineKeyboard(vararg buttonRows: List<Pair<String, CallbackData>>): InlineKeyboardMarkup {
+			return InlineKeyboardMarkup().apply {
+				keyboard = buttonRows.map { row ->
+					row.map { (text, callback) ->
+						InlineKeyboardButton().apply {
+							this.text = text
+							this.callbackData = TelegramSerialize.serializeData(callback)
+						}
+					}
+				}
+			}
+		}
+
+		fun createInlineKeyboard(buttonRows: List<List<Pair<String, CallbackData>>>): InlineKeyboardMarkup {
 			return InlineKeyboardMarkup().apply {
 				keyboard = buttonRows.map { row ->
 					row.map { (text, callback) ->

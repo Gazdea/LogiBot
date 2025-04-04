@@ -19,7 +19,6 @@ import ru.tutko.micro.logibot.telegram.util.UpdateUtil
 import kotlin.random.Random
 
 @Handlers
-@Component
 class TestHandler
 {
 

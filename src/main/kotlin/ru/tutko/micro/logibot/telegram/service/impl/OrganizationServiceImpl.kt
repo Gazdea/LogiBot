@@ -1,5 +1,8 @@
 package ru.tutko.micro.logibot.telegram.service.impl
 
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import ru.tutko.micro.logibot.telegram.model.dto.OrganizationDto
 import ru.tutko.micro.logibot.telegram.model.dto.RoleOrganizationPermissionDto
@@ -78,8 +81,9 @@ class OrganizationServiceImpl(
         return organizationRepository.findInfoById(id).get()
     }
 
-    override fun getOrganizationsByUserId(userId: Long): List<OrganizationInfo> {
-        return organizationRepository.findByUserOrganizationLinks_User_ExternalUserId(userId)
+    override fun getOrganizationsByUserId(userId: Long, page: Int, size: Int): Page<OrganizationInfo> {
+        val pageable = PageRequest.of(page, size)
+        return organizationRepository.findByUserOrganizationLinks_User_ExternalUserId(userId, pageable)
     }
 
 }

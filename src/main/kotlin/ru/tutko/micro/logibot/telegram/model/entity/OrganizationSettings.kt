@@ -4,6 +4,7 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.Size
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import ru.tutko.micro.logibot.telegram.model.enums.OrganizationSettingsEnum
 import java.time.Instant
 
 @Entity
@@ -21,7 +22,7 @@ class OrganizationSettings {
 
 	@Size(max = 100)
 	@Column(name = "setting_key", nullable = false)
-	var setting_key: String? = null
+	var setting_key: OrganizationSettingsEnum? = null
 
 	@Column(name = "setting_value")
 	var setting_value: String? = null

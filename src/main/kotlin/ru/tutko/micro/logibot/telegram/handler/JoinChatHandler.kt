@@ -1,6 +1,5 @@
 package ru.tutko.micro.logibot.telegram.handler
 
-import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import ru.tutko.micro.logibot.telegram.annotation.mapping.ChatMemberMapping
 import ru.tutko.micro.logibot.telegram.annotation.Handlers
@@ -13,16 +12,15 @@ import ru.tutko.micro.logibot.telegram.model.CallbackData
 import ru.tutko.micro.logibot.telegram.model.Request
 import ru.tutko.micro.logibot.telegram.model.Response
 import ru.tutko.micro.logibot.telegram.model.data.OrganizationId
+import ru.tutko.micro.logibot.telegram.model.data.Paginate
 import ru.tutko.micro.logibot.telegram.model.enums.ChatTypeEnum
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.CallbackQueryEnum
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.InputEnum
-import ru.tutko.micro.logibot.telegram.model.info.OrganizationInfo
 import ru.tutko.micro.logibot.telegram.service.ChatService
 import ru.tutko.micro.logibot.telegram.service.OrganizationService
 import ru.tutko.micro.logibot.telegram.util.UpdateUtil
 
 @Handlers
-@Component
 class JoinChatHandler(
 	private val organizationService: OrganizationService,
 	private val chatService: ChatService,
@@ -30,23 +28,81 @@ class JoinChatHandler(
 
 	@MyChatMemberMapping()
 	fun handleJoinBot(request: Request): Response {
-		val organizations = organizationService.getOrganizationsByUserId(request.userId)
+		val organizations = organizationService.getOrganizationsByUserId(request.userId, 0)
+
+//		val organizationButtons = organizations.content.map { org ->
+//			org.name!! to CallbackData(CallbackQueryEnum.SET_CHAT_ORGANIZATION, OrganizationId(org.id!!))
+//		}
+//
+//		val navigationButtons = if (organizations.hasNext()) {
+//			listOf("Вперёд" to CallbackData(CallbackQueryEnum.PAGINATE_SET_CHAT_ORGANIZATION, PaginateOrganizations(1)))
+//		} else {
+//			emptyList()
+//		}
+//
+//		val createOrganizationButton = listOf(
+//			"Создать новую организацию" to CallbackData(CallbackQueryEnum.SET_CHAT_CREATE_ORGANIZATION)
+//		)
+//
+//		val buttons = UpdateUtil.createInlineKeyboard(
+//			navigationButtons,
+//			organizationButtons,
+//			createOrganizationButton
+//		)
+		val organizationButtons = organizations.content.map { org ->
+			listOf(org.name!! to CallbackData(CallbackQueryEnum.SET_CHAT_ORGANIZATION, OrganizationId(org.id!!)))
+		}
+
+		val navigationButtons = mutableListOf<Pair<String, CallbackData>>()
+		navigationButtons.add("Создать новую организацию" to CallbackData(CallbackQueryEnum.SET_CHAT_CREATE_ORGANIZATION))
+		if (organizations.hasNext()) {
+			navigationButtons.add("->" to CallbackData(CallbackQueryEnum.PAGINATE_SET_CHAT_ORGANIZATION, Paginate(1)))
+		}
+
+		val buttons = UpdateUtil.createInlineKeyboard(
+			listOf(navigationButtons) + organizationButtons
+		)
+
 		return Response(
 			botApiMethods = listOf(
 				SendMessage().apply {
 					chatId = request.chatId.toString()
 					text = "Добрый день, выберите какой организации должен принадлежать этот чат или создайте новую"
-					replyMarkup = UpdateUtil.createInlineKeyboard(
-						organizations.map { org: OrganizationInfo ->
-							org.name!! to CallbackData(
-								CallbackQueryEnum.SET_CHAT_ORGANIZATION,
-								OrganizationId(org.id!!)
-							)
-						},
-						listOf(
-							"Создать новую организацию" to CallbackData(CallbackQueryEnum.SET_CHAT_CREATE_ORGANIZATION)
-						)
-					)
+					replyMarkup = buttons
+				}
+			)
+		)
+	}
+
+	@CallbackMapping(CallbackQueryEnum.PAGINATE_SET_CHAT_ORGANIZATION)
+	fun handlePaginateJoinBot(request: Request): Response {
+		val paginate = request.data?.getData<Paginate>() ?: throw ValidationException()
+
+		val organizations = organizationService.getOrganizationsByUserId(request.userId, paginate.page)
+
+		val organizationButtons = organizations.content.map { org ->
+			listOf(org.name!! to CallbackData(CallbackQueryEnum.SET_CHAT_ORGANIZATION, OrganizationId(org.id!!)))
+		}
+
+		val navigationButtons = mutableListOf<Pair<String, CallbackData>>()
+		navigationButtons.add("Создать новую организацию" to CallbackData(CallbackQueryEnum.SET_CHAT_CREATE_ORGANIZATION))
+		if (organizations.hasPrevious()) {
+			navigationButtons.add("<-" to CallbackData(CallbackQueryEnum.PAGINATE_SET_CHAT_ORGANIZATION, Paginate(paginate.page - 1)))
+		}
+		if (organizations.hasNext()) {
+			navigationButtons.add("->" to CallbackData(CallbackQueryEnum.PAGINATE_SET_CHAT_ORGANIZATION, Paginate(paginate.page - 1)))
+		}
+
+		val buttons = UpdateUtil.createInlineKeyboard(
+			listOf(navigationButtons) + organizationButtons
+		)
+
+		return Response(
+			botApiMethods = listOf(
+				SendMessage().apply {
+					chatId = request.chatId.toString()
+					text = "Добрый день, выберите какой организации должен принадлежать этот чат или создайте новую"
+					replyMarkup = buttons
 				}
 			)
 		)

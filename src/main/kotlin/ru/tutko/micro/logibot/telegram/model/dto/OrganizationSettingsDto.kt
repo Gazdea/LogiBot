@@ -1,6 +1,7 @@
 package ru.tutko.micro.logibot.telegram.model.dto
 
 import jakarta.validation.constraints.Size
+import ru.tutko.micro.logibot.telegram.model.enums.OrganizationSettingsEnum
 import java.io.Serializable
 import java.time.Instant
 
@@ -10,7 +11,7 @@ import java.time.Instant
 data class OrganizationSettingsDto(
 	var id: Long? = null,
 	var organization: OrganizationDto? = null,
-	@field:Size(max = 100) var setting_key: String? = null,
+	@field:Size(max = 100) var setting_key: OrganizationSettingsEnum? = null,
 	var setting_value: String? = null,
 	var created_at: Instant? = null,
 	var updated_at: Instant? = null
