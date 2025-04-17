@@ -6,15 +6,11 @@ enum class DefaultRoleEnum(val value: String, val permissionsAccessEnum: List<Pe
     ADMIN(
         "admin",
         listOf(
-            PermissionAccessEnum.MANAGE_ROLES,
-            PermissionAccessEnum.MANAGE_EMPLOYEE_ROLES,
-            PermissionAccessEnum.CREATE_REPORT,
-            PermissionAccessEnum.MANAGE_EMPLOYEES,
-            PermissionAccessEnum.VIEW_LOGS,
-            PermissionAccessEnum.VIEW_EMPLOYEES,
-            PermissionAccessEnum.MANAGE_TABLES
+            PermissionAccessEnum.CREATOR
         ),
-        TablePermissionAccessEnum.entries.toList()
+        listOf(
+            TablePermissionAccessEnum.CREATOR
+        )
     ),
 
     MODERATOR(
@@ -47,10 +43,6 @@ enum class DefaultRoleEnum(val value: String, val permissionsAccessEnum: List<Pe
                 roleOrganizationPermissions = role.permissionsAccessEnum?.map {permissionAccessEnum ->
                     RoleDto.RoleOrganizationPermissionDto(permission = permissionAccessEnum)
                 }?.toMutableSet() ?: mutableSetOf(),
-
-//                roleTablePermissions = role.tablePermissionAccessEnum?.map { tablePermissionAccessEnum ->
-//                    RoleDto.RoleTablePermissionDto(permission = tablePermissionAccessEnum.value)
-//                }?.toMutableSet() ?: mutableSetOf()
             )
         }
 

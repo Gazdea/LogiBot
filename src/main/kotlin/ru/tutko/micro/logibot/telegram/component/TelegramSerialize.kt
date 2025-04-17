@@ -9,6 +9,7 @@ import kotlinx.serialization.protobuf.ProtoBuf
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.tutko.micro.logibot.telegram.model.CallbackData
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.HandlerTypeEnum
+import java.util.*
 
 class TelegramSerialize {
 	companion object {
@@ -33,14 +34,15 @@ class TelegramSerialize {
 			}
 		}
 
-		@OptIn(ExperimentalSerializationApi::class)
 		fun serializeData(callbackData: CallbackData): String {
-			return ProtoBuf.encodeToHexString(CallbackData.serializer(), callbackData)
+			val bytes = ProtoBuf.encodeToByteArray(CallbackData.serializer(), callbackData)
+			return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
 		}
 
-		@OptIn(ExperimentalSerializationApi::class)
 		fun deserializeData(data: String): CallbackData {
-			return ProtoBuf.decodeFromHexString(CallbackData.serializer(), data)
+			val bytes = Base64.getUrlDecoder().decode(data)
+			return ProtoBuf.decodeFromByteArray(CallbackData.serializer(), bytes)
 		}
+
 	}
 }

@@ -1,6 +1,9 @@
 package ru.tutko.micro.logibot.telegram.handler
 
+import org.springframework.beans.factory.annotation.Value
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import ru.tutko.micro.logibot.telegram.annotation.mapping.ChatMemberMapping
 import ru.tutko.micro.logibot.telegram.annotation.Handlers
 import ru.tutko.micro.logibot.telegram.annotation.mapping.CallbackMapping
@@ -22,6 +25,7 @@ import ru.tutko.micro.logibot.telegram.util.UpdateUtil
 
 @Handlers
 class JoinChatHandler(
+	@Value("\${telegrambots.bots[0].username}") val myBotUsername: String,
 	private val organizationService: OrganizationService,
 	private val chatService: ChatService,
 ) {
@@ -29,26 +33,6 @@ class JoinChatHandler(
 	@MyChatMemberMapping()
 	fun handleJoinBot(request: Request): Response {
 		val organizations = organizationService.getOrganizationsByUserId(request.userId, 0)
-
-//		val organizationButtons = organizations.content.map { org ->
-//			org.name!! to CallbackData(CallbackQueryEnum.SET_CHAT_ORGANIZATION, OrganizationId(org.id!!))
-//		}
-//
-//		val navigationButtons = if (organizations.hasNext()) {
-//			listOf("Вперёд" to CallbackData(CallbackQueryEnum.PAGINATE_SET_CHAT_ORGANIZATION, PaginateOrganizations(1)))
-//		} else {
-//			emptyList()
-//		}
-//
-//		val createOrganizationButton = listOf(
-//			"Создать новую организацию" to CallbackData(CallbackQueryEnum.SET_CHAT_CREATE_ORGANIZATION)
-//		)
-//
-//		val buttons = UpdateUtil.createInlineKeyboard(
-//			navigationButtons,
-//			organizationButtons,
-//			createOrganizationButton
-//		)
 		val organizationButtons = organizations.content.map { org ->
 			listOf(org.name!! to CallbackData(CallbackQueryEnum.SET_CHAT_ORGANIZATION, OrganizationId(org.id!!)))
 		}
@@ -67,7 +51,9 @@ class JoinChatHandler(
 			botApiMethods = listOf(
 				SendMessage().apply {
 					chatId = request.chatId.toString()
-					text = "Добрый день, выберите какой организации должен принадлежать этот чат или создайте новую"
+					text = "Добрый день, Для начала выдайте мне " +
+							"[права администратор](https://help.chatplace.io/en/articles/10995326-%D0%BA%D0%B0%D0%BA-%D1%81%D0%B4%D0%B5%D0%BB%D0%B0%D1%82%D1%8C-%D0%B1%D0%BE%D1%82%D0%B0-%D0%B0%D0%B4%D0%BC%D0%B8%D0%BD%D0%B8%D1%81%D1%82%D1%80%D0%B0%D1%82%D0%BE%D1%80%D0%BE%D0%BC-telegram-%D0%BA%D0%B0%D0%BD%D0%B0%D0%BB%D0%B0-%D0%B8%D0%BB%D0%B8-%D1%87%D0%B0%D1%82%D0%B0)" +
+							"после этого выберите организацию"
 					replyMarkup = buttons
 				}
 			)
@@ -99,9 +85,9 @@ class JoinChatHandler(
 
 		return Response(
 			botApiMethods = listOf(
-				SendMessage().apply {
+				EditMessageReplyMarkup().apply {
+					messageId = UpdateUtil(request.update).getMessage()?.messageId ?: throw ValidationException()
 					chatId = request.chatId.toString()
-					text = "Добрый день, выберите какой организации должен принадлежать этот чат или создайте новую"
 					replyMarkup = buttons
 				}
 			)
@@ -144,7 +130,7 @@ class JoinChatHandler(
 					this.chatId = request.chatId.toString()
 					text = "Введите название организации"
 					replyMarkup =
-						UpdateUtil.createInlineKeyboard("Отмена" to CallbackData(CallbackQueryEnum.CANCEL))
+						UpdateUtil.createInlineKeyboardRow("Отмена" to CallbackData(CallbackQueryEnum.CANCEL))
 				}
 			),
 			inputType = CallbackData(InputEnum.SET_CHAT_CREATE_ORGANIZATION)
@@ -179,14 +165,13 @@ class JoinChatHandler(
 		)
 	}
 
-
 	@ChatMemberMapping()
 	fun handleJoinUser(request: Request): Response {
 		return Response(
 			botApiMethods = listOf(
 				SendMessage().apply {
 					chatId = request.chatId.toString()
-					text = "к нам зашел пользователь "
+					text = "Добро пожаловать в организацию напиши мне в [личный чат](https://t.me/${myBotUsername} '/start' что бы начать работу)"
 				}
 			)
 		)

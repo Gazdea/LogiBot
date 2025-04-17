@@ -15,4 +15,6 @@ interface UserRepository : JpaRepository<User, Long>, JpaSpecificationExecutor<U
 
 
 	fun existsByExternalUserId(externalUserId: Long): Boolean
+
+
 }

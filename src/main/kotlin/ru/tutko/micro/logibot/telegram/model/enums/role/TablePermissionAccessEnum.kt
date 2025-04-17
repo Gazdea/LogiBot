@@ -1,6 +1,7 @@
 package ru.tutko.micro.logibot.telegram.model.enums.role
 
 enum class TablePermissionAccessEnum() {
+    CREATOR, // имеет полные права
     CREATE_REPORT,  // имеет право создавать отчёты по таблице
     VIEW_TABLE,  // имеет право просматривать таблицу
     FILL_TABLE,  // имеет право заполнять таблицу

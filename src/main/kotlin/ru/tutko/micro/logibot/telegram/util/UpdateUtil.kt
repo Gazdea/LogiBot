@@ -8,11 +8,24 @@ import org.telegram.telegrambots.meta.api.objects.User
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.tutko.micro.logibot.telegram.model.CallbackData
+import ru.tutko.micro.logibot.telegram.model.dto.RoleDto
+import ru.tutko.micro.logibot.telegram.model.enums.mapping.CallbackQueryEnum
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.HandlerTypeEnum
+import ru.tutko.micro.logibot.telegram.model.enums.role.PermissionAccessEnum
 
 class UpdateUtil(private val update: Update) {
 	companion object {
-		fun createInlineKeyboard(vararg buttons: Pair<String, CallbackData>): InlineKeyboardMarkup {
+
+		fun checkAccessCreateButton(role: RoleDto, callbackQueryEnum: CallbackQueryEnum, data: Any?, label: String): Pair<String, CallbackData>? {
+			return if (role.roleOrganizationPermissions.any { it.permission == callbackQueryEnum.permission || it.permission == PermissionAccessEnum.CREATOR }) {
+				label to CallbackData(callbackQueryEnum, data)
+			} else {
+				null
+			}
+		}
+
+		// 1. Одинарные кнопки на каждой строке (vararg пар)
+		fun createInlineKeyboardRow(vararg buttons: Pair<String, CallbackData>): InlineKeyboardMarkup {
 			return InlineKeyboardMarkup().apply {
 				keyboard = buttons.map { (text, callback) ->
 					listOf(InlineKeyboardButton().apply {
@@ -23,10 +36,22 @@ class UpdateUtil(private val update: Update) {
 			}
 		}
 
-
-		fun createInlineKeyboard(vararg buttonRows: List<Pair<String, CallbackData>>): InlineKeyboardMarkup {
+		// 2. Одинарные кнопки на каждой строке (список пар)
+		fun createInlineKeyboardRow(buttons: List<Pair<String, CallbackData>>): InlineKeyboardMarkup {
 			return InlineKeyboardMarkup().apply {
-				keyboard = buttonRows.map { row ->
+				keyboard = buttons.map { (text, callback) ->
+					listOf(InlineKeyboardButton().apply {
+						this.text = text
+						this.callbackData = TelegramSerialize.serializeData(callback)
+					})
+				}
+			}
+		}
+
+		// 3. Несколько рядов кнопок (vararg списков пар)
+		fun createInlineKeyboard(vararg rows: List<Pair<String, CallbackData>>): InlineKeyboardMarkup {
+			return InlineKeyboardMarkup().apply {
+				keyboard = rows.map { row ->
 					row.map { (text, callback) ->
 						InlineKeyboardButton().apply {
 							this.text = text
@@ -37,9 +62,10 @@ class UpdateUtil(private val update: Update) {
 			}
 		}
 
-		fun createInlineKeyboard(buttonRows: List<List<Pair<String, CallbackData>>>): InlineKeyboardMarkup {
+		// 4. Несколько рядов кнопок (список списков пар)
+		fun createInlineKeyboard(rows: List<List<Pair<String, CallbackData>>>): InlineKeyboardMarkup {
 			return InlineKeyboardMarkup().apply {
-				keyboard = buttonRows.map { row ->
+				keyboard = rows.map { row ->
 					row.map { (text, callback) ->
 						InlineKeyboardButton().apply {
 							this.text = text

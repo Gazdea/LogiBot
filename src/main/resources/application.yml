@@ -7,14 +7,14 @@ spring:
     default-timeout: 30 # Таймаут транзакций в секундах
     isolation-level: DEFAULT # Уровень изоляции транзакций, например, REPEATABLE_READ/READ_COMMITTED/SERIALIZABLE
 
-  security:
-    user:
-      name: admin # Имя пользователя для базовой авторизации в dev-среде
-      password: secret # Пароль для базовой авторизации в dev-среде
-    oauth2:
-      resource server:
-        jwt:
-          issuer-uri: https://auth.example.com # URL авторизационного сервера для проверки JWT-токенов
+#  security:
+#    user:
+#      name: admin # Имя пользователя для базовой авторизации в dev-среде
+#      password: secret # Пароль для базовой авторизации в dev-среде
+#    oauth2:
+#      resource server:
+#        jwt:
+#          issuer-uri: https://auth.example.com # URL авторизационного сервера для проверки JWT-токенов
 
   datasource:
     driver-class-name: org.postgresql.Driver # Драйвер для подключения к PostgreSQL
@@ -39,7 +39,7 @@ spring:
         default_schema: public # Схема базы данных по умолчанию
     hibernate:
       ddl-auto: none # Отключение автоматического управления схемой базы данных (создание/обновление таблиц)
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+#    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
   cache:
     type: redis # Тип используемого кэша, например, caffeine, redis, ehcache

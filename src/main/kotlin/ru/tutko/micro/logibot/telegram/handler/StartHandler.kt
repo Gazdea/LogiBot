@@ -24,7 +24,7 @@ class StartHandler(
 
     @CommandMapping(command = CommandEnum.START)
     fun handleStart(request: Request): Response {
-        val  buttons = getPaginateOrganizations(userId = request.userId)
+        val buttons = getPaginateOrganizations(userId = request.userId)
 
         return Response(
             botApiMethods = listOf(SendMessage().apply {
@@ -48,7 +48,6 @@ class StartHandler(
             })
         )
     }
-
 
     private fun getPaginateOrganizations(paginate: Paginate = Paginate(0), userId: Long): InlineKeyboardMarkup {
         val organizations = organizationService.getOrganizationsByUserId(userId, paginate.page)

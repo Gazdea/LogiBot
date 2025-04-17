@@ -7,13 +7,11 @@ import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import ru.tutko.micro.logibot.telegram.model.entity.Organization
-import ru.tutko.micro.logibot.telegram.model.info.OrganizationInfo
 import java.util.*
 
 interface OrganizationRepository : JpaRepository<Organization, Long>, JpaSpecificationExecutor<Organization> {
 
 	@EntityGraph(attributePaths = ["userOrganizationLinks", "chats", "dataTables", "roles", "roleOrganizationPermissions", "userOrganizationLinks"])
-	fun findByUserOrganizationLinks_User_ExternalUserId(externalUserId: Long, pageable: Pageable): Page<OrganizationInfo>
+	fun findByUserOrganizationLinks_User_ExternalUserId(externalUserId: Long, pageable: Pageable): Page<Organization>
 
-	fun findInfoById(id: Long): Optional<OrganizationInfo>
 }

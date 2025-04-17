@@ -2,6 +2,7 @@ package ru.tutko.micro.logibot.telegram.model.dto
 
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
+import ru.tutko.micro.logibot.telegram.model.enums.role.PermissionAccessEnum
 import java.io.Serializable
 
 /**
@@ -11,7 +12,7 @@ data class RoleOrganizationPermissionDto(
 	var id: RoleOrganizationPermissionIdDto? = null,
 	var organization: OrganizationDto1? = null,
 	var role: RoleDto? = null,
-	@field:NotNull @field:Size(max = 100) var permission: String? = null
+	@field:NotNull @field:Size(max = 100) var permission: PermissionAccessEnum? = null
 ) : Serializable {
 	/**
 	 * DTO for {@link ru.tutko.micro.logibot.telegram.model.entity.RoleOrganizationPermissionId}

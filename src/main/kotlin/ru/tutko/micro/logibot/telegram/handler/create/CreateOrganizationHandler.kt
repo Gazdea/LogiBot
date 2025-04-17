@@ -19,19 +19,19 @@ import ru.tutko.micro.logibot.telegram.util.UpdateUtil
 class CreateOrganizationHandler( private val organizationService: OrganizationService
 ) {
 
-	@CommandMapping(CommandEnum.CREATE_ORGANIZATION)
-	fun commandCreateOrganization(request: Request): Response {
-		return Response(
-			botApiMethods = listOf(
-				SendMessage().apply {
-					chatId = request.chatId.toString()
-					text = "Введите название организации"
-					replyMarkup =
-						UpdateUtil.createInlineKeyboard("Отмена" to CallbackData(CallbackQueryEnum.CANCEL))
-				}
-			),
-			inputType = CallbackData(InputEnum.CREATE_ORGANIZATION))
-	}
+//	@CommandMapping(CommandEnum.CREATE_ORGANIZATION)
+//	fun commandCreateOrganization(request: Request): Response {
+//		return Response(
+//			botApiMethods = listOf(
+//				SendMessage().apply {
+//					chatId = request.chatId.toString()
+//					text = "Введите название организации"
+//					replyMarkup =
+//						UpdateUtil.createInlineKeyboard("Отмена" to CallbackData(CallbackQueryEnum.CANCEL))
+//				}
+//			),
+//			inputType = CallbackData(InputEnum.CREATE_ORGANIZATION))
+//	}
 
 	@InputMapping(InputEnum.CREATE_ORGANIZATION)
 	fun callbackQueryCreateOrganization(request: Request): Response {
@@ -58,10 +58,10 @@ class CreateOrganizationHandler( private val organizationService: OrganizationSe
 					chatId = request.chatId.toString()
 					text = "Введите название организации или отмените '/cancel'"
 					replyMarkup =
-						UpdateUtil.createInlineKeyboard("Отмена" to CallbackData(CallbackQueryEnum.CANCEL))
+						UpdateUtil.createInlineKeyboardRow("Отмена" to CallbackData(CallbackQueryEnum.CANCEL))
 				}
 			),
-			inputType = CallbackData(InputEnum.CREATE_ORGANIZATION.value)
+			inputType = CallbackData(InputEnum.CREATE_ORGANIZATION)
 		)
 	}
 }
