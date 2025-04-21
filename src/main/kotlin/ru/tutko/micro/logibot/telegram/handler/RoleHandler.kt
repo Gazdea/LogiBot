@@ -3,6 +3,7 @@ package ru.tutko.micro.logibot.telegram.handler
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import ru.tutko.micro.logibot.telegram.annotation.Handlers
 import ru.tutko.micro.logibot.telegram.annotation.mapping.CallbackMapping
+import ru.tutko.micro.logibot.telegram.component.TelegramKeyboard
 import ru.tutko.micro.logibot.telegram.exception.ValidationException
 import ru.tutko.micro.logibot.telegram.model.CallbackData
 import ru.tutko.micro.logibot.telegram.model.Request
@@ -10,6 +11,7 @@ import ru.tutko.micro.logibot.telegram.model.Response
 import ru.tutko.micro.logibot.telegram.model.data.OrganizationId
 import ru.tutko.micro.logibot.telegram.model.data.Role
 import ru.tutko.micro.logibot.telegram.model.data.OrganizationPaginate
+import ru.tutko.micro.logibot.telegram.model.data.Payload
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.CallbackQueryEnum
 import ru.tutko.micro.logibot.telegram.service.OrganizationService
 import ru.tutko.micro.logibot.telegram.service.RoleService
@@ -18,20 +20,21 @@ import ru.tutko.micro.logibot.telegram.util.UpdateUtil
 @Handlers
 class RoleHandler(
 	private val roleService: RoleService,
-	private val organizationService: OrganizationService
+	private val organizationService: OrganizationService,
+	private val telegramKeyboard: TelegramKeyboard
 ) {
 
 	@CallbackMapping(CallbackQueryEnum.PAGINATE_GET_ROLES)
 	fun getRolesOrganizations(request: Request): Response {
-		val organizationPaginate = request.data?.getData<OrganizationPaginate>() ?: throw ValidationException("Не найдены параметры")
+		val organizationPaginate = request.data?.data as OrganizationPaginate
 
 		val roles = organizationService.getRolesOrganization(organizationPaginate.organizationId, page = organizationPaginate.paginate.page)
 
-		val roleButtons = roles.content.map { role ->
-			listOf(role.roleName!! to CallbackData(CallbackQueryEnum.GET_ROLE, role.id?.let { Role(it) }))
+		val roleButtons: List<Pair<String, CallbackData<Payload>>> = roles.content.map { role ->
+			role.roleName!! to CallbackData(CallbackQueryEnum.GET_ROLE, role.id?.let { Role(it) })
 		}
 
-		val navigationButtons = mutableListOf<Pair<String, CallbackData>>()
+		val navigationButtons = mutableListOf<Pair<String, CallbackData<Payload>>>()
 
 		navigationButtons.add("Назад" to CallbackData(CallbackQueryEnum.GET_ORGANIZATION, OrganizationId(organizationPaginate.organizationId)))
 
@@ -44,9 +47,7 @@ class RoleHandler(
 			navigationButtons.add("<-" to CallbackData(CallbackQueryEnum.PAGINATE_GET_ROLES, organizationPaginate.paginate.decreasePage()))
 		}
 
-		val buttons = UpdateUtil.createInlineKeyboard(
-			listOf(navigationButtons) + roleButtons
-		)
+		val buttons = telegramKeyboard.createInlineKeyboard("${request.userId}",navigationButtons + roleButtons)
 
 		return Response(
 			botApiMethods = listOf(
@@ -62,7 +63,7 @@ class RoleHandler(
 
 	@CallbackMapping(CallbackQueryEnum.GET_ROLE)
 	fun getRole(request: Request): Response {
-		val role = request.data?.getData<Role>() ?: throw ValidationException()
+		val role = request.data?.data as Role
 
 		val roleDto = roleService.getRole(role.roleId)
 		//TODO

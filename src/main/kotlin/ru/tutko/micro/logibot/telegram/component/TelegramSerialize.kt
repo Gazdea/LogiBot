@@ -1,48 +1,49 @@
 package ru.tutko.micro.logibot.telegram.component
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.decodeFromHexString
-import kotlinx.serialization.encodeToHexString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.protobuf.ProtoBuf
-import org.telegram.telegrambots.meta.api.objects.Update
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import ru.tutko.micro.logibot.telegram.model.CallbackData
-import ru.tutko.micro.logibot.telegram.model.enums.mapping.HandlerTypeEnum
+import ru.tutko.micro.logibot.telegram.model.data.Payload
+
 import java.util.*
 
-class TelegramSerialize {
-	companion object {
+object TelegramSerialize {
+	private val mapper = jacksonObjectMapper()
 
-		fun extractData(
-			update: Update,
-			handlerType: HandlerTypeEnum,
-			data: String?
-		): CallbackData? {
-			return when (handlerType) {
-				HandlerTypeEnum.INPUT -> {
-					data
-						?.let { deserializeData(it) }
-				}
+	//Base64
+//	fun <T : Payload> serializeData(callbackData: CallbackData<T>): String {
+//		val json = mapper.writeValueAsString(callbackData)
+//		return Base64.getUrlEncoder().withoutPadding().encodeToString(json.toByteArray())
+//	}
+//
+//	fun deserializeData(data: String): CallbackData<out Payload> {
+//		val json = String(Base64.getUrlDecoder().decode(data))
+//		val rawNode = mapper.readTree(json)
+//
+//		val className = rawNode.get("className")?.asText()
+//			?: throw IllegalArgumentException("className missing in serialized data")
+//
+//		val payloadClass = Class.forName(className) as Class<out Payload>
+//
+//		val callbackDataType = mapper.typeFactory
+//			.constructParametricType(CallbackData::class.java, payloadClass)
+//
+//		return mapper.readValue(json, callbackDataType)
+//	}
 
-				HandlerTypeEnum.CALLBACK -> {
-					update.callbackQuery.data
-						?.let { deserializeData(it) }
-				}
+	fun <T : Payload> serializeData(callbackData: CallbackData<T>): String {
+		return mapper.writeValueAsString(callbackData)
+	}
 
-				else -> null
-			}
-		}
+	fun deserializeData(json: String): CallbackData<out Payload> {
+		val rootNode = mapper.readTree(json)
+		val className = rootNode.get("className")?.asText()
+			?: throw IllegalArgumentException("Missing className")
 
-		fun serializeData(callbackData: CallbackData): String {
-			val bytes = ProtoBuf.encodeToByteArray(CallbackData.serializer(), callbackData)
-			return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
-		}
+		val payloadClass = Class.forName(className) as Class<out Payload>
 
-		fun deserializeData(data: String): CallbackData {
-			val bytes = Base64.getUrlDecoder().decode(data)
-			return ProtoBuf.decodeFromByteArray(CallbackData.serializer(), bytes)
-		}
+		val typeRef = mapper.typeFactory
+			.constructParametricType(CallbackData::class.java, payloadClass)
 
+		return mapper.readValue(json, typeRef)
 	}
 }

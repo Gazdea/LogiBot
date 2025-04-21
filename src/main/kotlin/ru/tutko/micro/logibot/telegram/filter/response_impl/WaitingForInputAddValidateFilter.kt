@@ -1,14 +1,14 @@
 package ru.tutko.micro.logibot.telegram.filter.response_impl
 
-import ru.tutko.micro.logibot.telegram.component.TelegramSerialize
 import org.springframework.stereotype.Component
-import ru.tutko.micro.logibot.telegram.component.WaitingForInputContextStorage
+
 import ru.tutko.micro.logibot.telegram.filter.ResponseValidationFilter
 import ru.tutko.micro.logibot.telegram.model.Response
+import ru.tutko.micro.logibot.telegram.service.redis.CallbackRedisService
 
 @Component
 class WaitingForInputAddValidateFilter(
-	private val waitingForInputContextStorage: WaitingForInputContextStorage
+	private val redisService: CallbackRedisService,
 ): ResponseValidationFilter {
 
 	override fun validate(response: Response): Boolean {
@@ -16,6 +16,6 @@ class WaitingForInputAddValidateFilter(
 	}
 
 	override fun process(chatIdUserId: String, response: Response) {
-		waitingForInputContextStorage.set(chatIdUserId, TelegramSerialize.serializeData(response.inputType!!))
+		redisService.set(chatIdUserId, response.inputType!!)
 	}
 }

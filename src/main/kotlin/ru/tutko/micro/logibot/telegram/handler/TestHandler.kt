@@ -8,6 +8,7 @@ import ru.tutko.micro.logibot.telegram.annotation.*
 import ru.tutko.micro.logibot.telegram.annotation.mapping.CallbackMapping
 import ru.tutko.micro.logibot.telegram.annotation.mapping.CommandMapping
 import ru.tutko.micro.logibot.telegram.annotation.mapping.InputMapping
+import ru.tutko.micro.logibot.telegram.component.TelegramKeyboard
 import ru.tutko.micro.logibot.telegram.exception.NotFoundException
 import ru.tutko.micro.logibot.telegram.exception.ValidationException
 import ru.tutko.micro.logibot.telegram.model.*
@@ -19,7 +20,9 @@ import ru.tutko.micro.logibot.telegram.util.UpdateUtil
 import kotlin.random.Random
 
 @Handlers
-class TestHandler
+class TestHandler(
+    private val telegramKeyboard: TelegramKeyboard
+)
 {
 
     @CommandMapping(CommandEnum.TEST)
@@ -28,7 +31,7 @@ class TestHandler
             botApiMethods = listOf(SendMessage().apply {
                 chatId = request.update.message.chatId.toString()
                 text = "Проверка работоспособности"
-                replyMarkup = UpdateUtil.createInlineKeyboard(
+                replyMarkup = telegramKeyboard.createInlineKeyboard("${request.userId}",
                     listOf(
                         "Проверка input" to CallbackData(CallbackQueryEnum.TEST_INPUT),
                         "Проверка карт" to CallbackData(CallbackQueryEnum.TEST_MAP),
@@ -58,7 +61,7 @@ class TestHandler
 
     @InputMapping(InputEnum.TEST)
     fun testInput(request: Request): Response {
-        val testData = request.data?.getData<TestData>() ?: throw ValidationException("Не найдены TestData")
+        val testData = request.data?.data as TestData
         return Response(
             clearWaitingForInput = true,
             botApiMethods = listOf(SendMessage().apply {

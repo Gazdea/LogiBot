@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import ru.tutko.micro.logibot.telegram.annotation.Handlers
 import ru.tutko.micro.logibot.telegram.annotation.mapping.CallbackMapping
 import ru.tutko.micro.logibot.telegram.annotation.mapping.InputMapping
+import ru.tutko.micro.logibot.telegram.component.TelegramKeyboard
 import ru.tutko.micro.logibot.telegram.exception.ValidationException
 import ru.tutko.micro.logibot.telegram.model.CallbackData
 import ru.tutko.micro.logibot.telegram.model.Request
@@ -18,11 +19,12 @@ import ru.tutko.micro.logibot.telegram.util.UpdateUtil
 @Handlers
 class CreateRoleHandler(
 	private val roleService: RoleService,
+	private val telegramKeyboard: TelegramKeyboard
 ) {
 
 	@CallbackMapping(CallbackQueryEnum.CREATE_ROLE)
 	fun callbackCreateRole(request: Request): Response {
-		val organizationId = request.data?.getData<OrganizationId>() ?: throw ValidationException()
+		val organizationId = request.data?.data as OrganizationId
 		return Response(
 			botApiMethods = listOf(
 				EditMessageText().apply {
@@ -30,7 +32,7 @@ class CreateRoleHandler(
 					chatId = request.chatId.toString()
 					text = "Введите название роли или отмените '/cancel'"
 					replyMarkup =
-						UpdateUtil.createInlineKeyboardRow("Отмена" to CallbackData(CallbackQueryEnum.CANCEL))
+						telegramKeyboard.createInlineKeyboardRow("${request.userId}", "Отмена" to CallbackData(CallbackQueryEnum.CANCEL))
 				}
 			),
 			inputType = CallbackData(InputEnum.CREATE_ROLE, organizationId)
@@ -39,7 +41,7 @@ class CreateRoleHandler(
 
 	@InputMapping(InputEnum.CREATE_ROLE)
 	fun updateRole(request: Request): Response {
-		val organizationId = request.data?.getData<OrganizationId>() ?: throw ValidationException()
+		val organizationId = request.data?.data as OrganizationId
 		val roleName = UpdateUtil(request.update).getMessage()?.text ?: throw ValidationException()
 
 		val role = roleService.createRole(organizationId.orgId, roleName)

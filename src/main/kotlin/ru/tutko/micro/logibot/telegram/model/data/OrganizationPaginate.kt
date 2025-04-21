@@ -6,4 +6,4 @@ import kotlinx.serialization.Serializable
 data class OrganizationPaginate(
 	val organizationId: Long,
 	val paginate: Paginate
-)
+): Payload()

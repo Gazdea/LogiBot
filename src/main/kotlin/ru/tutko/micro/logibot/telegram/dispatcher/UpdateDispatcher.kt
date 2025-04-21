@@ -1,7 +1,6 @@
 package ru.tutko.micro.logibot.telegram.dispatcher
 
 import org.slf4j.LoggerFactory
-import ru.tutko.micro.logibot.telegram.component.TelegramSerialize
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod
@@ -9,7 +8,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.tutko.micro.logibot.telegram.annotation.mapping.*
 import ru.tutko.micro.logibot.telegram.aop.logging.LoggingAspect
-import ru.tutko.micro.logibot.telegram.component.WaitingForInputContextStorage
 import ru.tutko.micro.logibot.telegram.exception.*
 import ru.tutko.micro.logibot.telegram.filter.ResponseValidationFilter
 import ru.tutko.micro.logibot.telegram.model.Request
@@ -17,6 +15,7 @@ import ru.tutko.micro.logibot.telegram.model.Response
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.HandlerTypeEnum
 import ru.tutko.micro.logibot.telegram.util.UpdateUtil
 import ru.tutko.micro.logibot.telegram.filter.UpdateValidationFilter
+import ru.tutko.micro.logibot.telegram.service.redis.CallbackRedisService
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
@@ -27,7 +26,7 @@ class UpdateDispatcher(
     private val updateValidationFilter: List<UpdateValidationFilter>,
     private val responseValidationFilter: List<ResponseValidationFilter>,
 
-    private val waitingForInputContextStorage: WaitingForInputContextStorage
+    private val redisService: CallbackRedisService
 ) {
     private val logger = LoggerFactory.getLogger(LoggingAspect::class.java)
 
@@ -48,11 +47,17 @@ class UpdateDispatcher(
             }
         }
 
+        val callback = when (handlerType) {
+            HandlerTypeEnum.INPUT -> {redisService.get(chatIdUserId)}
+            HandlerTypeEnum.CALLBACK -> {redisService.get(update.callbackQuery.data)}
+            else -> null
+        }
+
         val request = Request(
             chatId,
             userId,
             update,
-            TelegramSerialize.extractData(update, handlerType, waitingForInputContextStorage.get(chatIdUserId))
+            callback
         )
 
         return try {
