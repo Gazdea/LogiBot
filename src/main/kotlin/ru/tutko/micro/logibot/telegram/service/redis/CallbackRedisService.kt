@@ -1,0 +1,22 @@
+package ru.tutko.micro.logibot.telegram.service.redis
+
+import ru.tutko.micro.logibot.telegram.model.CallbackData
+import ru.tutko.micro.logibot.telegram.model.data.Payload
+import java.time.Duration
+
+interface CallbackRedisService {
+
+	fun create(userId: String, value: CallbackData<Payload>, ttl: Duration = Duration.ofMinutes(30)): String
+
+	fun set(key: String, value: CallbackData<Payload>, ttl: Duration = Duration.ofMinutes(30))
+
+	fun pop(key: String): CallbackData<Payload>?
+
+	fun remove(key: String)
+
+	fun containsKey(key: String): Boolean
+
+	fun get(key: String): CallbackData<Payload>?
+
+	fun clearChatIdUserId(userId: String)
+}

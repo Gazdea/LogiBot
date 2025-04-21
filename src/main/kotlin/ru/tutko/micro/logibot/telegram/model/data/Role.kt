@@ -5,4 +5,4 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Role(
 	val roleId: Long
-)
+): Payload()

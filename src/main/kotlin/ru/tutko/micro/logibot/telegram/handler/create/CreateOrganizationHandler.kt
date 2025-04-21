@@ -6,9 +6,11 @@ import ru.tutko.micro.logibot.telegram.annotation.Handlers
 import ru.tutko.micro.logibot.telegram.annotation.mapping.CallbackMapping
 import ru.tutko.micro.logibot.telegram.annotation.mapping.CommandMapping
 import ru.tutko.micro.logibot.telegram.annotation.mapping.InputMapping
+import ru.tutko.micro.logibot.telegram.component.TelegramKeyboard
 import ru.tutko.micro.logibot.telegram.model.CallbackData
 import ru.tutko.micro.logibot.telegram.model.Request
 import ru.tutko.micro.logibot.telegram.model.Response
+import ru.tutko.micro.logibot.telegram.model.data.Payload
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.CallbackQueryEnum
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.CommandEnum
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.InputEnum
@@ -16,7 +18,9 @@ import ru.tutko.micro.logibot.telegram.service.OrganizationService
 import ru.tutko.micro.logibot.telegram.util.UpdateUtil
 
 @Handlers
-class CreateOrganizationHandler( private val organizationService: OrganizationService
+class CreateOrganizationHandler(
+	private val organizationService: OrganizationService,
+	private val telegramKeyboard: TelegramKeyboard
 ) {
 
 //	@CommandMapping(CommandEnum.CREATE_ORGANIZATION)
@@ -58,10 +62,10 @@ class CreateOrganizationHandler( private val organizationService: OrganizationSe
 					chatId = request.chatId.toString()
 					text = "Введите название организации или отмените '/cancel'"
 					replyMarkup =
-						UpdateUtil.createInlineKeyboardRow("Отмена" to CallbackData(CallbackQueryEnum.CANCEL))
+						telegramKeyboard.createInlineKeyboardRow("${request.userId}", "Отмена" to CallbackData(CallbackQueryEnum.CANCEL))
 				}
 			),
-			inputType = CallbackData(InputEnum.CREATE_ORGANIZATION)
+			inputType = CallbackData<Payload>(InputEnum.CREATE_ORGANIZATION)
 		)
 	}
 }

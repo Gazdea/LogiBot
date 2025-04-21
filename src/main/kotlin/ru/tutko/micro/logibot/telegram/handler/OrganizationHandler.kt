@@ -3,6 +3,7 @@ package ru.tutko.micro.logibot.telegram.handler
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import ru.tutko.micro.logibot.telegram.annotation.mapping.CallbackMapping
 import ru.tutko.micro.logibot.telegram.annotation.Handlers
+import ru.tutko.micro.logibot.telegram.component.TelegramKeyboard
 import ru.tutko.micro.logibot.telegram.exception.ValidationException
 import ru.tutko.micro.logibot.telegram.model.CallbackData
 import ru.tutko.micro.logibot.telegram.model.Request
@@ -19,31 +20,31 @@ import ru.tutko.micro.logibot.telegram.util.UpdateUtil
 class OrganizationHandler(
     private val organizationService: OrganizationService,
     private val roleService: RoleService,
+    private val telegramKeyboard: TelegramKeyboard
 ) {
     @CallbackMapping(CallbackQueryEnum.GET_ORGANIZATION)
     fun callbackQueryGetOrganization(request: Request): Response {
-        val organizationId = request.data?.getData<OrganizationId>()
-            ?: throw ValidationException("Не найдена OrganizationId")
+        val organizationId = request.data?.data as OrganizationId
 
         val organization = organizationService.getOrganizationById(organizationId.orgId)
         val role = roleService.getRoleByUserOrganization(organizationId.orgId, request.userId)
 
-        val buttons = UpdateUtil.createInlineKeyboardRow(
+        val buttons = telegramKeyboard.createInlineKeyboardRow("${request.userId}",
             listOfNotNull(
             ("Назад" to CallbackData(CallbackQueryEnum.PAGINATE_ORGANIZATIONS, Paginate(0))),
-                UpdateUtil.checkAccessCreateButton(role, CallbackQueryEnum.SETTINGS,
+                TelegramKeyboard.checkAccessCreateButton(role, CallbackQueryEnum.SETTINGS,
                     null, "Настройки"),
-                UpdateUtil.checkAccessCreateButton(role, CallbackQueryEnum.PAGINATE_GET_ROLES,
+                TelegramKeyboard.checkAccessCreateButton(role, CallbackQueryEnum.PAGINATE_GET_ROLES,
                     OrganizationPaginate(organizationId.orgId, Paginate(0)), "Роли организации"),
-                UpdateUtil.checkAccessCreateButton(role, CallbackQueryEnum.PAGINATE_GET_USERS,
+                TelegramKeyboard.checkAccessCreateButton(role, CallbackQueryEnum.PAGINATE_GET_USERS,
                     OrganizationPaginate(organizationId.orgId, Paginate(0)), "Сотрудники организации"),
-                UpdateUtil.checkAccessCreateButton(role, CallbackQueryEnum.PAGINATE_GET_TABLES,
+                TelegramKeyboard.checkAccessCreateButton(role, CallbackQueryEnum.PAGINATE_GET_TABLES,
                     OrganizationPaginate(organizationId.orgId, Paginate(0)), "Таблицы организации"),
-                UpdateUtil.checkAccessCreateButton(role, CallbackQueryEnum.PAGINATE_GET_CHATS,
+                TelegramKeyboard.checkAccessCreateButton(role, CallbackQueryEnum.PAGINATE_GET_CHATS,
                     OrganizationPaginate(organizationId.orgId, Paginate(0)), "Чаты организации"),
-                UpdateUtil.checkAccessCreateButton(role, CallbackQueryEnum.LOGS_ORGANIZATION,
+                TelegramKeyboard.checkAccessCreateButton(role, CallbackQueryEnum.LOGS_ORGANIZATION,
                     organizationId, "Логи организации"),
-                UpdateUtil.checkAccessCreateButton(role, CallbackQueryEnum.REPORT_ORGANIZATION,
+                TelegramKeyboard.checkAccessCreateButton(role, CallbackQueryEnum.REPORT_ORGANIZATION,
                     organizationId, "Отчеты организации")
         ))
 

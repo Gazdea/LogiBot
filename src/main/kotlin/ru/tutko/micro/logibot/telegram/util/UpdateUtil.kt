@@ -1,6 +1,5 @@
 package ru.tutko.micro.logibot.telegram.util
 
-import ru.tutko.micro.logibot.telegram.component.TelegramSerialize
 import org.telegram.telegrambots.meta.api.objects.Chat
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -8,80 +7,20 @@ import org.telegram.telegrambots.meta.api.objects.User
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.tutko.micro.logibot.telegram.model.CallbackData
+import ru.tutko.micro.logibot.telegram.model.data.Payload
 import ru.tutko.micro.logibot.telegram.model.dto.RoleDto
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.CallbackQueryEnum
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.HandlerTypeEnum
 import ru.tutko.micro.logibot.telegram.model.enums.role.PermissionAccessEnum
 
+
 class UpdateUtil(private val update: Update) {
-	companion object {
-
-		fun checkAccessCreateButton(role: RoleDto, callbackQueryEnum: CallbackQueryEnum, data: Any?, label: String): Pair<String, CallbackData>? {
-			return if (role.roleOrganizationPermissions.any { it.permission == callbackQueryEnum.permission || it.permission == PermissionAccessEnum.CREATOR }) {
-				label to CallbackData(callbackQueryEnum, data)
-			} else {
-				null
-			}
-		}
-
-		// 1. Одинарные кнопки на каждой строке (vararg пар)
-		fun createInlineKeyboardRow(vararg buttons: Pair<String, CallbackData>): InlineKeyboardMarkup {
-			return InlineKeyboardMarkup().apply {
-				keyboard = buttons.map { (text, callback) ->
-					listOf(InlineKeyboardButton().apply {
-						this.text = text
-						this.callbackData = TelegramSerialize.serializeData(callback)
-					})
-				}
-			}
-		}
-
-		// 2. Одинарные кнопки на каждой строке (список пар)
-		fun createInlineKeyboardRow(buttons: List<Pair<String, CallbackData>>): InlineKeyboardMarkup {
-			return InlineKeyboardMarkup().apply {
-				keyboard = buttons.map { (text, callback) ->
-					listOf(InlineKeyboardButton().apply {
-						this.text = text
-						this.callbackData = TelegramSerialize.serializeData(callback)
-					})
-				}
-			}
-		}
-
-		// 3. Несколько рядов кнопок (vararg списков пар)
-		fun createInlineKeyboard(vararg rows: List<Pair<String, CallbackData>>): InlineKeyboardMarkup {
-			return InlineKeyboardMarkup().apply {
-				keyboard = rows.map { row ->
-					row.map { (text, callback) ->
-						InlineKeyboardButton().apply {
-							this.text = text
-							this.callbackData = TelegramSerialize.serializeData(callback)
-						}
-					}
-				}
-			}
-		}
-
-		// 4. Несколько рядов кнопок (список списков пар)
-		fun createInlineKeyboard(rows: List<List<Pair<String, CallbackData>>>): InlineKeyboardMarkup {
-			return InlineKeyboardMarkup().apply {
-				keyboard = rows.map { row ->
-					row.map { (text, callback) ->
-						InlineKeyboardButton().apply {
-							this.text = text
-							this.callbackData = TelegramSerialize.serializeData(callback)
-						}
-					}
-				}
-			}
-		}
-	}
 
 	fun getHandlerType(): HandlerTypeEnum {
 		val handlerType = when {
 			update.hasMessage() && update.message.entities?.any { it.type == "bot_command" } == true -> HandlerTypeEnum.COMMAND
 			update.hasCallbackQuery() -> HandlerTypeEnum.CALLBACK
-			update.hasMessage() && !(update.message.text?.startsWith("/") ?: false) -> HandlerTypeEnum.INPUT
+			update.hasMessage() && update.message.text?.startsWith("/") != true -> HandlerTypeEnum.INPUT
 			update.hasChatMember() -> HandlerTypeEnum.CHAT_MEMBER
 			update.hasMyChatMember() -> HandlerTypeEnum.MY_CHAT_MEMBER
 			else -> HandlerTypeEnum.UNKNOWN
