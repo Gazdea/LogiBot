@@ -25,13 +25,12 @@ class RoleHandler(
 ) {
 
 	@CallbackMapping(CallbackQueryEnum.PAGINATE_GET_ROLES)
-	fun getRolesOrganizations(request: Request): Response {
-		val organizationPaginate = request.data?.data as OrganizationPaginate
+	fun getRolesOrganizations(request: Request, organizationPaginate: OrganizationPaginate): Response {
 
 		val roles = organizationService.getRolesOrganization(organizationPaginate.organizationId, page = organizationPaginate.paginate.page)
 
-		val roleButtons: List<Pair<String, CallbackData<Payload>>> = roles.content.map { role ->
-			role.roleName!! to CallbackData(CallbackQueryEnum.GET_ROLE, role.id?.let { Role(it) })
+		val roleButtons: List<List<Pair<String, CallbackData<Payload>>>> = roles.content.map { role ->
+			listOf(role.roleName!! to CallbackData(CallbackQueryEnum.GET_ROLE, role.id?.let { Role(it) }))
 		}
 
 		val navigationButtons = mutableListOf<Pair<String, CallbackData<Payload>>>()
@@ -47,7 +46,7 @@ class RoleHandler(
 			navigationButtons.add("<-" to CallbackData(CallbackQueryEnum.PAGINATE_GET_ROLES, organizationPaginate.paginate.decreasePage()))
 		}
 
-		val buttons = telegramKeyboard.createInlineKeyboard("${request.userId}",navigationButtons + roleButtons)
+		val buttons = telegramKeyboard.createInlineKeyboard("${request.userId}",listOf(navigationButtons) + roleButtons)
 
 		return Response(
 			botApiMethods = listOf(

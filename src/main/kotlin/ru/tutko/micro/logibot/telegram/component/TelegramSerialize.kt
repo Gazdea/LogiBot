@@ -10,40 +10,43 @@ object TelegramSerialize {
 	private val mapper = jacksonObjectMapper()
 
 	//Base64
+	fun <T : Payload> serializeData(callbackData: CallbackData<T>): String {
+		val json = mapper.writeValueAsString(callbackData)
+		return Base64.getUrlEncoder().withoutPadding().encodeToString(json.toByteArray())
+	}
+
+	fun deserializeData(data: String): CallbackData<out Payload> {
+		val json = String(Base64.getUrlDecoder().decode(data))
+		val rawNode = mapper.readTree(json)
+
+		val classNameNode = rawNode.get("className")
+		if (classNameNode == null || classNameNode.isNull || classNameNode.asText().isBlank()) {
+			return mapper.readValue(json, CallbackData::class.java)
+		}
+
+		val className = classNameNode.asText()
+		val payloadClass = Class.forName(className) as Class<out Payload>
+
+		val callbackDataType = mapper.typeFactory
+			.constructParametricType(CallbackData::class.java, payloadClass)
+
+		return mapper.readValue(json, callbackDataType)
+	}
+
 //	fun <T : Payload> serializeData(callbackData: CallbackData<T>): String {
-//		val json = mapper.writeValueAsString(callbackData)
-//		return Base64.getUrlEncoder().withoutPadding().encodeToString(json.toByteArray())
+//		return mapper.writeValueAsString(callbackData)
 //	}
 //
-//	fun deserializeData(data: String): CallbackData<out Payload> {
-//		val json = String(Base64.getUrlDecoder().decode(data))
-//		val rawNode = mapper.readTree(json)
-//
-//		val className = rawNode.get("className")?.asText()
-//			?: throw IllegalArgumentException("className missing in serialized data")
+//	fun deserializeData(json: String): CallbackData<out Payload> {
+//		val rootNode = mapper.readTree(json)
+//		val className = rootNode.get("className")?.asText()
+//			?: throw IllegalArgumentException("Missing className")
 //
 //		val payloadClass = Class.forName(className) as Class<out Payload>
 //
-//		val callbackDataType = mapper.typeFactory
+//		val typeRef = mapper.typeFactory
 //			.constructParametricType(CallbackData::class.java, payloadClass)
 //
-//		return mapper.readValue(json, callbackDataType)
+//		return mapper.readValue(json, typeRef)
 //	}
-
-	fun <T : Payload> serializeData(callbackData: CallbackData<T>): String {
-		return mapper.writeValueAsString(callbackData)
-	}
-
-	fun deserializeData(json: String): CallbackData<out Payload> {
-		val rootNode = mapper.readTree(json)
-		val className = rootNode.get("className")?.asText()
-			?: throw IllegalArgumentException("Missing className")
-
-		val payloadClass = Class.forName(className) as Class<out Payload>
-
-		val typeRef = mapper.typeFactory
-			.constructParametricType(CallbackData::class.java, payloadClass)
-
-		return mapper.readValue(json, typeRef)
-	}
 }

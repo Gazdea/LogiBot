@@ -11,7 +11,6 @@ import java.util.*
 
 interface OrganizationRepository : JpaRepository<Organization, Long>, JpaSpecificationExecutor<Organization> {
 
-	@EntityGraph(attributePaths = ["userOrganizationLinks", "chats", "dataTables", "roles", "roleOrganizationPermissions", "userOrganizationLinks"])
 	fun findByUserOrganizationLinks_User_ExternalUserId(externalUserId: Long, pageable: Pageable): Page<Organization>
 
 }

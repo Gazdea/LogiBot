@@ -98,6 +98,7 @@ class OrganizationServiceImpl(
         return organizationMapper.toDto(organizationRepository.findById(id).orElseThrow {NotFoundException()})
     }
 
+    @Transactional
     override fun getOrganizationsByUserId(userId: Long, page: Int, size: Int): Page<OrganizationDto> {
         val pageable = PageRequest.of(page, size)
         val organizations = organizationRepository.findByUserOrganizationLinks_User_ExternalUserId(userId, pageable)

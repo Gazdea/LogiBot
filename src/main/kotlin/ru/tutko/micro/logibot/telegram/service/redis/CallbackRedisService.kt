@@ -6,9 +6,11 @@ import java.time.Duration
 
 interface CallbackRedisService {
 
-	fun create(userId: String, value: CallbackData<Payload>, ttl: Duration = Duration.ofMinutes(30)): String
+	fun create(userId: String, value: CallbackData<Payload>, ttl: Duration = Duration.ofMinutes(5)): String
 
-	fun set(key: String, value: CallbackData<Payload>, ttl: Duration = Duration.ofMinutes(30))
+	fun createMany(userId: String, values: List<CallbackData<Payload>>, ttl: Duration = Duration.ofMinutes(5)): List<Pair<String, CallbackData<Payload>>>
+
+	fun set(key: String, value: CallbackData<Payload>, ttl: Duration = Duration.ofMinutes(5))
 
 	fun pop(key: String): CallbackData<Payload>?
 
@@ -18,5 +20,7 @@ interface CallbackRedisService {
 
 	fun get(key: String): CallbackData<Payload>?
 
-	fun clearChatIdUserId(userId: String)
+	fun clearUserId(userId: String)
+
+	fun containsUserId(userId: String): Boolean
 }

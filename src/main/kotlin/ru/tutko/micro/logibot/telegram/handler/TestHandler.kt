@@ -27,17 +27,19 @@ class TestHandler(
 
     @CommandMapping(CommandEnum.TEST)
     fun test(request: Request): Response {
+        val buttons = telegramKeyboard.createInlineKeyboard("${request.userId}",
+            listOf(
+                "Проверка input" to CallbackData(CallbackQueryEnum.TEST_INPUT),
+                "Проверка карт" to CallbackData(CallbackQueryEnum.TEST_MAP),
+                "Закрыть" to CallbackData(CallbackQueryEnum.TEST_CLOSE)
+            )
+        )
+
         return Response(
             botApiMethods = listOf(SendMessage().apply {
                 chatId = request.update.message.chatId.toString()
                 text = "Проверка работоспособности"
-                replyMarkup = telegramKeyboard.createInlineKeyboard("${request.userId}",
-                    listOf(
-                        "Проверка input" to CallbackData(CallbackQueryEnum.TEST_INPUT),
-                        "Проверка карт" to CallbackData(CallbackQueryEnum.TEST_MAP),
-                        "Закрыть" to CallbackData(CallbackQueryEnum.TEST_CLOSE)
-                    )
-                )
+                replyMarkup = buttons
             }
             )
         )

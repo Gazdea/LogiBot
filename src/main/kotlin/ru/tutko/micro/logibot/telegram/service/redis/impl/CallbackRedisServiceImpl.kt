@@ -30,12 +30,32 @@ class CallbackRedisServiceImpl(
 		return key
 	}
 
+	override fun createMany(userId: String, values: List<CallbackData<Payload>>, ttl: Duration): List<Pair<String, CallbackData<Payload>>> {
+		val keyValueMap = mutableMapOf<String, Any>()
+		val keys = mutableListOf<Pair<String, CallbackData<Payload>>>()
+
+		values.forEach { value ->
+			val key = generateUniqueKey()
+			val serialized = TelegramSerialize.serializeData(value)
+			keyValueMap[key] = serialized
+			keys.add(key to value)
+		}
+
+		redisTemplate.opsForValue().multiSet(keyValueMap)
+
+		keys.forEach { redisTemplate.expire(it.first, ttl) }
+
+		val keyStrings = keys.map { it.first }
+		redisTemplate.opsForList().rightPushAll(userId, *keyStrings.toTypedArray())
+
+		return keys
+	}
+
 	override fun set(key: String, value: CallbackData<Payload>, ttl: Duration) {
 		val serialized = TelegramSerialize.serializeData(value)
 		redisTemplate.opsForValue().set(key, serialized, ttl)
 	}
 
-	@Suppress("UNCHECKED_CAST")
 	override fun pop(key: String): CallbackData<Payload>? {
 		val raw = redisTemplate.opsForValue().get(key) ?: return null
 		val callbackData = TelegramSerialize.deserializeData(raw.toString()) as CallbackData<Payload>
@@ -43,16 +63,20 @@ class CallbackRedisServiceImpl(
 		return callbackData
 	}
 
-	@Suppress("UNCHECKED_CAST")
 	override fun get(key: String): CallbackData<Payload>? {
 		val raw = redisTemplate.opsForValue().get(key) ?: return null
 		return TelegramSerialize.deserializeData(raw.toString()) as CallbackData<Payload>
 	}
 
-	override fun clearChatIdUserId(userId: String) {
+	override fun clearUserId(userId: String) {
 		val keys = redisTemplate.opsForList().range(userId, 0, -1) ?: return
 		keys.forEach { redisTemplate.delete(it.toString()) }
 		redisTemplate.delete(userId)
+	}
+
+	override fun containsUserId(userId: String): Boolean {
+		val size = redisTemplate.opsForList().size(userId) ?: return false
+		return size > 0
 	}
 
 	override fun remove(key: String) {

@@ -40,8 +40,7 @@ class StartHandler(
     }
 
     @CallbackMapping(CallbackQueryEnum.PAGINATE_ORGANIZATIONS)
-    fun paginateOrganizations(request: Request): Response {
-        val paginate = (request.data?.data ?: throw ValidationException()) as Paginate
+    fun paginateOrganizations(request: Request, paginate: Paginate): Response {
         val buttons = getPaginateOrganizations(paginate, request.userId)
 
         return Response(

@@ -23,9 +23,7 @@ class OrganizationHandler(
     private val telegramKeyboard: TelegramKeyboard
 ) {
     @CallbackMapping(CallbackQueryEnum.GET_ORGANIZATION)
-    fun callbackQueryGetOrganization(request: Request): Response {
-        val organizationId = request.data?.data as OrganizationId
-
+    fun callbackQueryGetOrganization(request: Request, organizationId: OrganizationId): Response {
         val organization = organizationService.getOrganizationById(organizationId.orgId)
         val role = roleService.getRoleByUserOrganization(organizationId.orgId, request.userId)
 

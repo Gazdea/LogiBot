@@ -24,9 +24,9 @@ class TelegramKeyboard(
 		): Pair<String, CallbackData<Payload>>? {
 			return if (role.roleOrganizationPermissions.any { it.permission == callbackQueryEnum.permission || it.permission == PermissionAccessEnum.CREATOR }) {
 				val callbackData = if (data != null) {
-					CallbackData(callbackQueryEnum.toString(), data::class.java.name, data)
+					CallbackData(callbackQueryEnum.value, data::class.java.name, data)
 				} else {
-					CallbackData(callbackQueryEnum.toString())
+					CallbackData(callbackQueryEnum.value)
 				}
 				label to callbackData
 			} else {
@@ -37,11 +37,15 @@ class TelegramKeyboard(
 
 	// 1. Одинарные кнопки на каждой строке (vararg пар)
 	fun createInlineKeyboardRow(userId: String, vararg buttons: Pair<String, CallbackData<Payload>>): InlineKeyboardMarkup {
+		val textsAndCallbacks = buttons.toList()
+		val callbacks = textsAndCallbacks.map { it.second }
+
+		val keyPairs = callbackRedisService.createMany(userId, callbacks)
 		return InlineKeyboardMarkup().apply {
-			keyboard = buttons.map { (text, callback) ->
+			keyboard = textsAndCallbacks.mapIndexed { index, (text, _) ->
 				listOf(InlineKeyboardButton().apply {
 					this.text = text
-					this.callbackData = callbackRedisService.create(userId, callback)
+					this.callbackData = keyPairs[index].first
 				})
 			}
 		}
@@ -49,11 +53,14 @@ class TelegramKeyboard(
 
 	// 2. Одинарные кнопки на каждой строке (список пар)
 	fun createInlineKeyboardRow(userId: String, buttons: List<Pair<String, CallbackData<Payload>>>): InlineKeyboardMarkup {
+		val callbacks = buttons.map { it.second }
+		val keyPairs = callbackRedisService.createMany(userId, callbacks)
+
 		return InlineKeyboardMarkup().apply {
-			keyboard = buttons.map { (text, callback) ->
+			keyboard = buttons.mapIndexed { index, (text, _) ->
 				listOf(InlineKeyboardButton().apply {
 					this.text = text
-					this.callbackData = callbackRedisService.create(userId, callback)
+					this.callbackData = keyPairs[index].first
 				})
 			}
 		}
@@ -61,12 +68,17 @@ class TelegramKeyboard(
 
 	// 3. Несколько рядов кнопок (vararg списков пар)
 	fun createInlineKeyboard(userId: String, vararg rows: List<Pair<String, CallbackData<Payload>>>): InlineKeyboardMarkup {
+		val flat: List<Pair<String, CallbackData<Payload>>> = rows.toList().flatten()
+		val callbacks: List<CallbackData<Payload>> = flat.map { it.second }
+		val keyPairs: List<Pair<String, CallbackData<Payload>>> = callbackRedisService.createMany(userId, callbacks)
+
+		var idx = 0
 		return InlineKeyboardMarkup().apply {
 			keyboard = rows.map { row ->
-				row.map { (text, callback) ->
+				row.map {
 					InlineKeyboardButton().apply {
-						this.text = text
-						this.callbackData = callbackRedisService.create(userId, callback)
+						this.text = it.first
+						this.callbackData = keyPairs[idx++].first
 					}
 				}
 			}
@@ -75,12 +87,17 @@ class TelegramKeyboard(
 
 	// 4. Несколько рядов кнопок (список списков пар)
 	fun createInlineKeyboard(userId: String, rows: List<List<Pair<String, CallbackData<Payload>>>>): InlineKeyboardMarkup {
+		val flat = rows.flatten()
+		val callbacks = flat.map { it.second }
+		val keyPairs = callbackRedisService.createMany(userId, callbacks)
+
+		var idx = 0
 		return InlineKeyboardMarkup().apply {
 			keyboard = rows.map { row ->
-				row.map { (text, callback) ->
+				row.map {
 					InlineKeyboardButton().apply {
-						this.text = text
-						this.callbackData = callbackRedisService.create(userId, callback)
+						this.text = it.first
+						this.callbackData = keyPairs[idx++].first
 					}
 				}
 			}
