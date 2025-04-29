@@ -9,7 +9,7 @@ import ru.tutko.micro.logibot.telegram.model.CallbackData
 import ru.tutko.micro.logibot.telegram.model.Request
 import ru.tutko.micro.logibot.telegram.model.Response
 import ru.tutko.micro.logibot.telegram.model.data.OrganizationId
-import ru.tutko.micro.logibot.telegram.model.data.Role
+import ru.tutko.micro.logibot.telegram.model.data.RoleData
 import ru.tutko.micro.logibot.telegram.model.data.OrganizationPaginate
 import ru.tutko.micro.logibot.telegram.model.data.Payload
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.CallbackQueryEnum
@@ -29,8 +29,8 @@ class RoleHandler(
 
 		val roles = organizationService.getRolesOrganization(organizationPaginate.organizationId, page = organizationPaginate.paginate.page)
 
-		val roleButtons: List<List<Pair<String, CallbackData<Payload>>>> = roles.content.map { role ->
-			listOf(role.roleName!! to CallbackData(CallbackQueryEnum.GET_ROLE, role.id?.let { Role(it) }))
+		val roleDataButtons: List<List<Pair<String, CallbackData<Payload>>>> = roles.content.map { role ->
+			listOf(role.roleName!! to CallbackData(CallbackQueryEnum.GET_ROLE, role.id?.let { RoleData(it) }))
 		}
 
 		val navigationButtons = mutableListOf<Pair<String, CallbackData<Payload>>>()
@@ -46,7 +46,7 @@ class RoleHandler(
 			navigationButtons.add("<-" to CallbackData(CallbackQueryEnum.PAGINATE_GET_ROLES, organizationPaginate.paginate.decreasePage()))
 		}
 
-		val buttons = telegramKeyboard.createInlineKeyboard("${request.userId}",listOf(navigationButtons) + roleButtons)
+		val buttons = telegramKeyboard.createInlineKeyboard("${request.userId}",listOf(navigationButtons) + roleDataButtons)
 
 		return Response(
 			botApiMethods = listOf(
@@ -62,9 +62,9 @@ class RoleHandler(
 
 	@CallbackMapping(CallbackQueryEnum.GET_ROLE)
 	fun getRole(request: Request): Response {
-		val role = request.data?.data as Role
+		val roleData = request.data?.data as RoleData
 
-		val roleDto = roleService.getRole(role.roleId)
+		val roleDto = roleService.getRole(roleData.roleId)
 		//TODO
 
 		return Response(

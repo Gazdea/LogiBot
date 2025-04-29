@@ -59,12 +59,15 @@ spring:
       password: ${MONGO_PASSWORD:logistic}
       authentication-database: ${MONGO_AUTH:admin}
 
+webServer:
+  domainName: ${WEB_DOMAIN_NAME}
+
 telegrambots:
   enabled: true # Включение TelegramBots
   bots:
     - username: ${TELEGRAM_BOT_USERNAME} # Имя пользователя бота
       token: ${TELEGRAM_BOT_TOKEN} # Токен доступа бота
-#      path: ${TELEGRAM_WEBHOOK_PATH:https://your-server.com/webhook} # URL для вебхука (если используется)
+#      path: ${TELEGRAM_WEBHOOK_PATH} # URL для вебхука (если используется)
 
 management:
   endpoints:

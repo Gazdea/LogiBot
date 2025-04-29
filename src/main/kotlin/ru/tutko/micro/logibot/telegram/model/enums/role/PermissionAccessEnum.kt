@@ -20,4 +20,6 @@ enum class PermissionAccessEnum() {
     VIEW_LOGS,  // имеет право просматривать логи
 
     CREATE_REPORT,  // имеет право создавать отчёт
+
+    JOINER, // Пользователь сделал запрос на присоединение
 }

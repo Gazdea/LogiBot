@@ -33,6 +33,13 @@ enum class DefaultRoleEnum(val value: String, val permissionsAccessEnum: List<Pe
         PermissionAccessEnum.VIEW_EMPLOYEES
         ),
         listOf()
+    ),
+
+    JOINER("joiner",
+        listOf(
+        PermissionAccessEnum.JOINER,
+        ),
+        listOf()
     );
 
     companion object {

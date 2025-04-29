@@ -15,6 +15,8 @@ enum class CallbackQueryEnum(val value: String, val permission: PermissionAccess
 
     BOT_JOIN_ADD_ORGANIZATION("botJoinAddOrganization", PermissionAccessEnum.CREATOR),
 
+    CREATE_JOIN_REQUEST("createJoinRequest"),
+
     GET_ORGANIZATION("getOrganization"),
 
     SET_CHAT_ORGANIZATION("setChatOrganization", PermissionAccessEnum.CREATOR),
@@ -27,6 +29,8 @@ enum class CallbackQueryEnum(val value: String, val permission: PermissionAccess
     PAGINATE_GET_ROLES("paginateGetRoles", PermissionAccessEnum.VIEW_ROLES),
 
     GET_ROLE("getRole", PermissionAccessEnum.VIEW_ROLES),
+
+    MANAGE_USER_ROLE("manageUserRole", PermissionAccessEnum.MANAGE_EMPLOYEE_ROLES),
 
     CREATE_ROLE("createRole", PermissionAccessEnum.MANAGE_ROLES),
 
@@ -41,4 +45,8 @@ enum class CallbackQueryEnum(val value: String, val permission: PermissionAccess
     REPORT_ORGANIZATION("reportOrganization", PermissionAccessEnum.CREATE_REPORT),
 
     GET_USER("getUser", PermissionAccessEnum.VIEW_EMPLOYEES),
+
+    PAGINATE_GET_JOINERS("paginateGetJoiners", PermissionAccessEnum.MANAGE_EMPLOYEES),
+
+    SET_ROLE_USER("setRoleUser", PermissionAccessEnum.MANAGE_EMPLOYEE_ROLES),
 }

@@ -69,4 +69,8 @@ class RoleServiceImpl(
 			)
 		)
 	}
+
+	override fun getRolesByOrganizationId(organizationId: Long): List<RoleDto> {
+		return roleRepository.getRolesByOrganizationId(organizationId).map { role -> roleMapper.toDto(role) }
+	}
 }

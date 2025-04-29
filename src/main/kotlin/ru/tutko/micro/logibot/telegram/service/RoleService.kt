@@ -11,4 +11,6 @@ interface RoleService {
 	fun userExistsPermission(organizationId: Long, externalUserId: Long, permission: PermissionAccessEnum): Boolean
 
 	fun createRole(organizationId: Long, roleName: String): RoleDto
+
+	fun getRolesByOrganizationId(organizationId: Long): List<RoleDto>
 }

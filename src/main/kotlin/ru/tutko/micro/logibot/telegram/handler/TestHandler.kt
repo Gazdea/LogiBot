@@ -1,9 +1,13 @@
 package ru.tutko.micro.logibot.telegram.handler
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendLocation
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import org.telegram.telegrambots.meta.api.objects.webapp.WebAppInfo
 import ru.tutko.micro.logibot.telegram.annotation.*
 import ru.tutko.micro.logibot.telegram.annotation.mapping.CallbackMapping
 import ru.tutko.micro.logibot.telegram.annotation.mapping.CommandMapping
@@ -21,7 +25,8 @@ import kotlin.random.Random
 
 @Handlers
 class TestHandler(
-    private val telegramKeyboard: TelegramKeyboard
+    private val telegramKeyboard: TelegramKeyboard,
+    @Value("\${webServer.domainName}") val domainName: String
 )
 {
 
@@ -34,13 +39,29 @@ class TestHandler(
                 "Закрыть" to CallbackData(CallbackQueryEnum.TEST_CLOSE)
             )
         )
+        val buttons2 =  InlineKeyboardMarkup().apply {
+            this.keyboard = listOf(
+                listOf(
+                    InlineKeyboardButton().apply {
+                        text = "Открыть таблицу"
+                        webApp = WebAppInfo("https://${domainName}")
+                    }
+                )
+            )
+        }
 
         return Response(
-            botApiMethods = listOf(SendMessage().apply {
+            botApiMethods = listOf(
+                SendMessage().apply {
                 chatId = request.update.message.chatId.toString()
                 text = "Проверка работоспособности"
                 replyMarkup = buttons
-            }
+                                    },
+                SendMessage().apply {
+                    chatId = request.update.message.chatId.toString()
+                    text = "Проверка работоспособности web"
+                    replyMarkup = buttons2
+                },
             )
         )
     }
@@ -97,6 +118,6 @@ class TestHandler(
 
     @CommandMapping(CommandEnum.TEST_EXCEPTION)
     fun testException(request: Request): Response {
-        throw NotFoundException()
+        throw ValidationException("Я егор привет")
     }
 }
