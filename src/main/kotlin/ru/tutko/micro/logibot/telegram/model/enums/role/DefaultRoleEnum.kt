@@ -23,8 +23,8 @@ enum class DefaultRoleEnum(val value: String, val permissionsAccessEnum: List<Pe
         listOf(
             TablePermissionAccessEnum.CREATE_REPORT,
             TablePermissionAccessEnum.VIEW_TABLE,
-            TablePermissionAccessEnum.FILL_TABLE,
-            TablePermissionAccessEnum.EXPORT_TABLE
+            TablePermissionAccessEnum.FILL_METADATA,
+            TablePermissionAccessEnum.CREATE_REPORT
         )
     ),
 

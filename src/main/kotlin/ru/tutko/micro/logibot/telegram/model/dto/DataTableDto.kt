@@ -12,7 +12,9 @@ data class DataTableDto(
 	var id: Long? = null,
 	@field:NotNull var organization: OrganizationDto? = null,
 	@field:NotNull @field:Size(max = 255) var tableName: String? = null,
-	var createdAt: Instant? = null
+	var createdAt: Instant? = null,
+	var tableColumns: MutableSet<TableColumnDto> = mutableSetOf(),
+	var tableDataMetadata: MutableSet<TableDataMetadatumDto> = mutableSetOf()
 ) : Serializable {
 	/**
 	 * DTO for {@link ru.tutko.micro.logibot.telegram.model.entity.Organization}

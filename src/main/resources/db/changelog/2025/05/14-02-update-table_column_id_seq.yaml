@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-table-column-sequence
+      author: tutko
+      changes:
+        - createSequence:
+            sequenceName: table_column_id_seq
+            startValue: 1
+            incrementBy: 1
+
+        - modifyDataType:
+            tableName: table_column
+            columnName: id
+            newDataType: BIGINT
+
+        - addDefaultValue:
+            tableName: table_column
+            columnName: id
+            defaultValueSequenceNext: table_column_id_seq

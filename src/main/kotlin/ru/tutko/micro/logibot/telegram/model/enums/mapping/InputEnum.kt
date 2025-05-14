@@ -7,4 +7,8 @@ enum class InputEnum(val value: String) {
     SET_CHAT_CREATE_ORGANIZATION("setChatCreateOrganization"),
 
     CREATE_ROLE("createRole"),
+
+    CREATE_TABLE("createTable"),
+
+    SET_NAME_COLUMN("setNameColumn"),
 }

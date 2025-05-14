@@ -1,9 +1,21 @@
 package ru.tutko.micro.logibot.telegram.model.data
 
-import kotlinx.serialization.Serializable
+class Paginate<T>(
+	private val items: List<T>,
+	private val page: Int = 0,
+	private val size: Int = 8
+) {
+	fun currentPage(): List<T> {
+		val fromIndex = (page * size).coerceAtMost(items.size)
+		val toIndex = ((page + 1) * size).coerceAtMost(items.size)
+		return items.subList(fromIndex, toIndex)
+	}
 
-@Serializable
-data class Paginate(val page: Int) : Payload() {
-	fun increasePage(): Paginate = copy(page = page + 1)
-	fun decreasePage(): Paginate = copy(page = page - 1)
+	fun hasNext(): Boolean = (page + 1) * size < items.size
+
+	fun hasPrevious(): Boolean = page > 0
+
+	fun increasePage(): Paginate<T> = Paginate(items, page + 1, size)
+
+	fun decreasePage(): Paginate<T> = Paginate(items, page - 1, size)
 }

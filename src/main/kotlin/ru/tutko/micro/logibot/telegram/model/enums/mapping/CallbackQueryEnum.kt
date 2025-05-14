@@ -1,8 +1,9 @@
 package ru.tutko.micro.logibot.telegram.model.enums.mapping
 
 import ru.tutko.micro.logibot.telegram.model.enums.role.PermissionAccessEnum
+import ru.tutko.micro.logibot.telegram.model.enums.role.TablePermissionAccessEnum
 
-enum class CallbackQueryEnum(val value: String, val permission: PermissionAccessEnum? = null) {
+enum class CallbackQueryEnum(val value: String, val permission: PermissionAccessEnum? = null, val tablePermissionAccessEnum: TablePermissionAccessEnum? = null) {
 
     TEST_INPUT("testInput"),
     TEST_MAP("testMap"),
@@ -49,4 +50,27 @@ enum class CallbackQueryEnum(val value: String, val permission: PermissionAccess
     PAGINATE_GET_JOINERS("paginateGetJoiners", PermissionAccessEnum.MANAGE_EMPLOYEES),
 
     SET_ROLE_USER("setRoleUser", PermissionAccessEnum.MANAGE_EMPLOYEE_ROLES),
+
+    UPDATE_ROLE_PERMISSION("updateRolePermission", PermissionAccessEnum.MANAGE_ROLES),
+
+    GET_TABLE("getTables", PermissionAccessEnum.VIEW_TABLES, TablePermissionAccessEnum.VIEW_TABLE),
+
+    CREATE_TABLE("createTable", PermissionAccessEnum.MANAGE_TABLES),
+
+//    GET_TABLE_COLUMN("getTableColumn", PermissionAccessEnum.VIEW_TABLES, ),
+
+    GET_DATA_TABLE_COLUMN("getDataTableColumn", PermissionAccessEnum.VIEW_TABLES, TablePermissionAccessEnum.VIEW_METADATA),
+
+    ADD_DATA_TABLE_COLUMN("addDataTableColumn", PermissionAccessEnum.MANAGE_TABLES, TablePermissionAccessEnum.FILL_METADATA),
+
+    EDIT_TABLE_COLUMN("editTableColumn", PermissionAccessEnum.MANAGE_TABLES, TablePermissionAccessEnum.EDIT_TABLE),
+
+    MANAGE_TABLE_PERMISSIONS("editTableRoles", PermissionAccessEnum.MANAGE_ROLES, TablePermissionAccessEnum.MANAGE_TABLE_PERMISSIONS),
+
+    GET_REPORT_TABLE("getReportTable", PermissionAccessEnum.CREATE_REPORT, TablePermissionAccessEnum.CREATE_REPORT),
+
+    ADD_COLUMN_TABLE("addColumnTable", PermissionAccessEnum.MANAGE_TABLES, TablePermissionAccessEnum.EDIT_TABLE),
+    SET_NAME_COLUMN("setNameColumn", PermissionAccessEnum.MANAGE_TABLES, TablePermissionAccessEnum.EDIT_TABLE),
+
+    GET_COLUMN_TABLE("getColumnTable", PermissionAccessEnum.MANAGE_TABLES, TablePermissionAccessEnum.EDIT_TABLE),
 }

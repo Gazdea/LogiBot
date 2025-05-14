@@ -4,13 +4,14 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import org.hibernate.annotations.ColumnDefault
-import ru.tutko.micro.logibot.telegram.model.enums.ColumnTypeEnum
+import ru.tutko.micro.logibot.telegram.model.enums.table.ColumnTypeEnum
 
 @Entity
 @Table(name = "table_column")
 class TableColumn {
 	@Id
-	@ColumnDefault("nextval('table_column_id_seq')")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_column_id_gen")
+	@SequenceGenerator(name = "table_column_id_gen", sequenceName = "table_column_id_seq", allocationSize = 1)
 	@Column(name = "id", nullable = false)
 	var id: Long? = null
 

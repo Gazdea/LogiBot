@@ -29,4 +29,10 @@ class DataTable {
 	@CreationTimestamp
 	@Column(name = "created_at")
 	var createdAt: Instant? = null
+
+	@OneToMany(mappedBy = "table")
+	var tableColumns: MutableSet<TableColumn> = mutableSetOf()
+
+	@OneToMany(mappedBy = "table")
+	var tableDataMetadata: MutableSet<TableDataMetadatum> = mutableSetOf()
 }

@@ -12,14 +12,11 @@ import ru.tutko.micro.logibot.telegram.model.Request
 import ru.tutko.micro.logibot.telegram.model.Response
 import ru.tutko.micro.logibot.telegram.model.data.OrganizationId
 import ru.tutko.micro.logibot.telegram.model.data.OrganizationPaginate
-import ru.tutko.micro.logibot.telegram.model.data.Paginate
+import ru.tutko.micro.logibot.telegram.model.data.Pageable
 import ru.tutko.micro.logibot.telegram.model.data.Payload
-import ru.tutko.micro.logibot.telegram.model.data.RoleData
 import ru.tutko.micro.logibot.telegram.model.data.UserOrganizationData
 import ru.tutko.micro.logibot.telegram.model.data.UserOrganizationPaginate
 import ru.tutko.micro.logibot.telegram.model.data.UserOrganizationRoleData
-import ru.tutko.micro.logibot.telegram.model.dto.RoleDto
-import ru.tutko.micro.logibot.telegram.model.entity.Role
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.CallbackQueryEnum
 import ru.tutko.micro.logibot.telegram.model.enums.role.PermissionAccessEnum
 import ru.tutko.micro.logibot.telegram.service.OrganizationService
@@ -40,16 +37,16 @@ class UserHandler(
 	fun callbackQueryGetUsers(request: Request, organizationPaginate: OrganizationPaginate): Response {
 
 		val users = userService.getUsersByOrganizationIdAndPermissions(
-			organizationPaginate.organizationId, listOf(
+			organizationPaginate.orgId, listOf(
 				PermissionAccessEnum.JOINER
-			), false, organizationPaginate.paginate.page
+			), false, organizationPaginate.pageable.page
 		)
 
 		val userIdButtons: List<List<Pair<String, CallbackData<Payload>>>> = users.content.map { user ->
 			listOf(
 				user.firstName!! to CallbackData(
 					CallbackQueryEnum.GET_USER,
-					user.id?.let { UserOrganizationData(user.id!!, organizationPaginate.organizationId) })
+					user.id?.let { UserOrganizationData(user.id!!, organizationPaginate.orgId) })
 			)
 		}
 
@@ -58,32 +55,32 @@ class UserHandler(
 		navigationButtons.add(
 			"Назад" to CallbackData(
 				CallbackQueryEnum.GET_ORGANIZATION,
-				OrganizationId(organizationPaginate.organizationId)
+				OrganizationId(organizationPaginate.orgId)
 			)
 		)
 
 		navigationButtons.add(
 			"Заявки" to CallbackData(
 				CallbackQueryEnum.PAGINATE_GET_JOINERS, OrganizationPaginate(
-					organizationPaginate.organizationId,
-					Paginate(0)
+					organizationPaginate.orgId,
+					Pageable(0)
 				)
 			)
 		)
 
 		if (users.hasPrevious()) {
 			navigationButtons.add(
-				"->" to CallbackData(
+				"Вперёд ➡️" to CallbackData(
 					CallbackQueryEnum.PAGINATE_GET_USERS,
-					organizationPaginate.paginate.increasePage()
+					organizationPaginate.pageable.increasePage()
 				)
 			)
 		}
 		if (users.hasNext()) {
 			navigationButtons.add(
-				"<-" to CallbackData(
+				"⬅️ Назад" to CallbackData(
 					CallbackQueryEnum.PAGINATE_GET_USERS,
-					organizationPaginate.paginate.decreasePage()
+					organizationPaginate.pageable.decreasePage()
 				)
 			)
 		}
@@ -107,16 +104,16 @@ class UserHandler(
 	@CallbackMapping(CallbackQueryEnum.PAGINATE_GET_JOINERS)
 	fun callbackQueryGetJoiners(request: Request, organizationPaginate: OrganizationPaginate): Response {
 		val users = userService.getUsersByOrganizationIdAndPermissions(
-			organizationPaginate.organizationId, listOf(
+			organizationPaginate.orgId, listOf(
 				PermissionAccessEnum.JOINER
-			), true, organizationPaginate.paginate.page
+			), true, organizationPaginate.pageable.page
 		)
 
 		val userIdButtons: List<List<Pair<String, CallbackData<Payload>>>> = users.content.map { user ->
 			listOf(
 				user.firstName!! to CallbackData(
 					CallbackQueryEnum.GET_USER,
-					user.id?.let { UserOrganizationData(user.id!!, organizationPaginate.organizationId) })
+					user.id?.let { UserOrganizationData(user.id!!, organizationPaginate.orgId) })
 			)
 		}
 
@@ -125,15 +122,15 @@ class UserHandler(
 		navigationButtons.add(
 			"Назад" to CallbackData(
 				CallbackQueryEnum.GET_ORGANIZATION,
-				OrganizationId(organizationPaginate.organizationId)
+				OrganizationId(organizationPaginate.orgId)
 			)
 		)
 
 		navigationButtons.add(
 			"Сотрудники" to CallbackData(
 				CallbackQueryEnum.PAGINATE_GET_USERS, OrganizationPaginate(
-					organizationPaginate.organizationId,
-					Paginate(0)
+					organizationPaginate.orgId,
+					Pageable(0)
 				)
 			)
 		)
@@ -141,23 +138,23 @@ class UserHandler(
 		navigationButtons.add(
 			"Создать приглашение" to CallbackData(
 				CallbackQueryEnum.CREATE_JOIN_REQUEST,
-				OrganizationId(organizationPaginate.organizationId)
+				OrganizationId(organizationPaginate.orgId)
 			)
 		)
 
 		if (users.hasPrevious()) {
 			navigationButtons.add(
-				"->" to CallbackData(
+				"Вперёд ➡️" to CallbackData(
 					CallbackQueryEnum.PAGINATE_GET_JOINERS,
-					organizationPaginate.paginate.increasePage()
+					organizationPaginate.pageable.increasePage()
 				)
 			)
 		}
 		if (users.hasNext()) {
 			navigationButtons.add(
-				"<-" to CallbackData(
+				"⬅️ Назад" to CallbackData(
 					CallbackQueryEnum.PAGINATE_GET_JOINERS,
-					organizationPaginate.paginate.decreasePage()
+					organizationPaginate.pageable.decreasePage()
 				)
 			)
 		}
@@ -206,11 +203,11 @@ class UserHandler(
 				listOfNotNull(
 					("Назад" to CallbackData(
 						CallbackQueryEnum.PAGINATE_GET_USERS,
-						OrganizationPaginate(userOrganizationData.organizationId, Paginate(0))
+						OrganizationPaginate(userOrganizationData.organizationId, Pageable(0))
 					)),
 					TelegramKeyboard.checkAccessCreateButton(
 						role, CallbackQueryEnum.MANAGE_USER_ROLE,
-						UserOrganizationPaginate(userOrganizationData, Paginate(0)), "Изменить роль сотрудника"
+						UserOrganizationPaginate(userOrganizationData, Pageable(0)), "Изменить роль сотрудника"
 					),
 				)
 			)
@@ -231,7 +228,7 @@ class UserHandler(
 				listOfNotNull(
 					("Назад" to CallbackData(
 						CallbackQueryEnum.PAGINATE_GET_USERS,
-						OrganizationPaginate(userOrganizationData.organizationId, Paginate(0))
+						OrganizationPaginate(userOrganizationData.organizationId, Pageable(0))
 					)),
 
 				)
@@ -255,7 +252,7 @@ class UserHandler(
 	fun callbackQueryManageUserRole(request: Request, userOrganizationPaginate: UserOrganizationPaginate): Response {
 		val userOrganizationLink = userService.getUserOrganizationLinkByUserOrganizationData(userOrganizationPaginate.userOrganizationData.organizationId, userOrganizationPaginate.userOrganizationData.userId)
 
-		val roles = organizationService.getRolesOrganization(userOrganizationPaginate.userOrganizationData.organizationId, page = userOrganizationPaginate.paginate.page)
+		val roles = organizationService.getRolesOrganization(userOrganizationPaginate.userOrganizationData.organizationId, page = userOrganizationPaginate.pageable.page)
 
 		val rolesDataButtons: List<List<Pair<String, CallbackData<Payload>>>> = roles.content.map { role ->
 			listOf(role.roleName!! to CallbackData(CallbackQueryEnum.SET_ROLE_USER, role.id?.let { UserOrganizationRoleData(
@@ -268,10 +265,10 @@ class UserHandler(
 		navigationButtons.add("Назад" to CallbackData(CallbackQueryEnum.GET_USER, userOrganizationPaginate.userOrganizationData))
 
 		if (roles.hasPrevious()) {
-			navigationButtons.add("->" to CallbackData(CallbackQueryEnum.MANAGE_USER_ROLE, userOrganizationPaginate.paginate.increasePage()))
+			navigationButtons.add("Вперёд ➡️" to CallbackData(CallbackQueryEnum.MANAGE_USER_ROLE, userOrganizationPaginate.pageable.increasePage()))
 		}
 		if (roles.hasNext()) {
-			navigationButtons.add("<-" to CallbackData(CallbackQueryEnum.MANAGE_USER_ROLE, userOrganizationPaginate.paginate.decreasePage()))
+			navigationButtons.add("⬅️ Назад" to CallbackData(CallbackQueryEnum.MANAGE_USER_ROLE, userOrganizationPaginate.pageable.decreasePage()))
 		}
 
 		val buttons = telegramKeyboard.createInlineKeyboard("${request.userId}",listOf(navigationButtons) + rolesDataButtons)
@@ -300,9 +297,9 @@ class UserHandler(
 
 		val buttons = telegramKeyboard.createInlineKeyboardRow("${request.userId}",
 			listOfNotNull(
-				("Назад" to CallbackData(CallbackQueryEnum.PAGINATE_GET_USERS, OrganizationPaginate(userOrganizationRoleData.organizationId, Paginate(0)))),
+				("Назад" to CallbackData(CallbackQueryEnum.PAGINATE_GET_USERS, OrganizationPaginate(userOrganizationRoleData.organizationId, Pageable(0)))),
 				TelegramKeyboard.checkAccessCreateButton(role, CallbackQueryEnum.MANAGE_USER_ROLE,
-					UserOrganizationPaginate(UserOrganizationData(userOrganizationRoleData.userId, userOrganizationRoleData.organizationId), Paginate(0)), "Изменить роль сотрудника"),
+					UserOrganizationPaginate(UserOrganizationData(userOrganizationRoleData.userId, userOrganizationRoleData.organizationId), Pageable(0)), "Изменить роль сотрудника"),
 			)
 		)
 

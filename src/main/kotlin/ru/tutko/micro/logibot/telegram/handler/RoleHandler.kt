@@ -11,8 +11,11 @@ import ru.tutko.micro.logibot.telegram.model.Response
 import ru.tutko.micro.logibot.telegram.model.data.OrganizationId
 import ru.tutko.micro.logibot.telegram.model.data.RoleData
 import ru.tutko.micro.logibot.telegram.model.data.OrganizationPaginate
+import ru.tutko.micro.logibot.telegram.model.data.Pageable
+import ru.tutko.micro.logibot.telegram.model.data.Paginate
 import ru.tutko.micro.logibot.telegram.model.data.Payload
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.CallbackQueryEnum
+import ru.tutko.micro.logibot.telegram.model.enums.role.PermissionAccessEnum
 import ru.tutko.micro.logibot.telegram.service.OrganizationService
 import ru.tutko.micro.logibot.telegram.service.RoleService
 import ru.tutko.micro.logibot.telegram.util.UpdateUtil
@@ -27,23 +30,23 @@ class RoleHandler(
 	@CallbackMapping(CallbackQueryEnum.PAGINATE_GET_ROLES)
 	fun getRolesOrganizations(request: Request, organizationPaginate: OrganizationPaginate): Response {
 
-		val roles = organizationService.getRolesOrganization(organizationPaginate.organizationId, page = organizationPaginate.paginate.page)
+		val roles = organizationService.getRolesOrganization(organizationPaginate.orgId, page = organizationPaginate.pageable.page)
 
 		val roleDataButtons: List<List<Pair<String, CallbackData<Payload>>>> = roles.content.map { role ->
-			listOf(role.roleName!! to CallbackData(CallbackQueryEnum.GET_ROLE, role.id?.let { RoleData(it) }))
+			listOf(role.roleName!! to CallbackData(CallbackQueryEnum.GET_ROLE, role.id?.let { RoleData(organizationPaginate.orgId, roleId = it) }))
 		}
 
 		val navigationButtons = mutableListOf<Pair<String, CallbackData<Payload>>>()
 
-		navigationButtons.add("Назад" to CallbackData(CallbackQueryEnum.GET_ORGANIZATION, OrganizationId(organizationPaginate.organizationId)))
+		navigationButtons.add("Назад" to CallbackData(CallbackQueryEnum.GET_ORGANIZATION, OrganizationId(organizationPaginate.orgId)))
 
-		navigationButtons.add("Создать новую роль" to CallbackData(CallbackQueryEnum.CREATE_ROLE, OrganizationId(organizationPaginate.organizationId)))
+		navigationButtons.add("Создать новую роль" to CallbackData(CallbackQueryEnum.CREATE_ROLE, OrganizationId(organizationPaginate.orgId)))
 
 		if (roles.hasPrevious()) {
-			navigationButtons.add("->" to CallbackData(CallbackQueryEnum.PAGINATE_GET_ROLES, organizationPaginate.paginate.increasePage()))
+			navigationButtons.add("Вперёд ➡️" to CallbackData(CallbackQueryEnum.PAGINATE_GET_ROLES, organizationPaginate.pageable.increasePage()))
 		}
 		if (roles.hasNext()) {
-			navigationButtons.add("<-" to CallbackData(CallbackQueryEnum.PAGINATE_GET_ROLES, organizationPaginate.paginate.decreasePage()))
+			navigationButtons.add("⬅️ Назад" to CallbackData(CallbackQueryEnum.PAGINATE_GET_ROLES, organizationPaginate.pageable.decreasePage()))
 		}
 
 		val buttons = telegramKeyboard.createInlineKeyboard("${request.userId}",listOf(navigationButtons) + roleDataButtons)
@@ -60,12 +63,50 @@ class RoleHandler(
 		)
 	}
 
-	@CallbackMapping(CallbackQueryEnum.GET_ROLE)
-	fun getRole(request: Request): Response {
-		val roleData = request.data?.data as RoleData
+	@CallbackMapping(CallbackQueryEnum.GET_ROLE, CallbackQueryEnum.UPDATE_ROLE_PERMISSION)
+	fun getRole(request: Request, roleData: RoleData): Response {
+		if (roleData.updatePermission != null) {
+			roleService.updateRolePermission(roleData.roleId, roleData.orgId, roleData.updatePermission)
+		}
 
 		val roleDto = roleService.getRole(roleData.roleId)
-		//TODO
+
+		val existingPermissions = roleDto.roleOrganizationPermissions
+			.map { it.permission }
+			.toSet()
+
+		val permissionsView = Paginate(
+			items = PermissionAccessEnum.entries.toList(),
+			page = roleData.pageablePermission.page,
+			size = 8
+		)
+
+
+		val roleDataButtons: List<List<Pair<String, CallbackData<Payload>>>> = permissionsView.currentPage().map { permission ->
+			listOf(
+				"${permission.nameRu}: ${if (existingPermissions.contains(permission)) "✅" else "❌"}" to
+						CallbackData(CallbackQueryEnum.UPDATE_ROLE_PERMISSION, roleData.copy(updatePermission = permission))
+			)
+		}
+
+		val navigationButtons = mutableListOf<Pair<String, CallbackData<Payload>>>()
+
+		navigationButtons.add("Назад" to CallbackData(CallbackQueryEnum.PAGINATE_GET_ROLES, OrganizationPaginate(roleData.orgId)))
+
+		if (permissionsView.hasPrevious()) {
+			navigationButtons.add("⬅️ Назад" to CallbackData(CallbackQueryEnum.GET_ROLE, roleData.copy(
+				pageablePermission = roleData.pageablePermission.decreasePage()
+			)))
+		}
+		if (permissionsView.hasNext()) {
+			navigationButtons.add("Вперёд ➡️" to CallbackData(CallbackQueryEnum.GET_ROLE, roleData.copy(
+				pageablePermission = roleData.pageablePermission.increasePage()
+			)))
+		}
+
+
+
+		val buttons = telegramKeyboard.createInlineKeyboard("${request.userId}",listOf(navigationButtons) + roleDataButtons)
 
 		return Response(
 			botApiMethods = listOf(
@@ -73,6 +114,7 @@ class RoleHandler(
 					messageId = UpdateUtil(request.update).getMessage()?.messageId ?: throw ValidationException()
 					chatId = request.chatId.toString()
 					text = "Выбрана роль ${roleDto.roleName}"
+					replyMarkup = buttons
 				}
 			)
 		)

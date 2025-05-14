@@ -19,7 +19,8 @@ data class RoleOrganizationPermissionDto(
 	 */
 	data class RoleOrganizationPermissionIdDto(
 		@field:NotNull var organizationId: Long? = null,
-		@field:NotNull var roleId: Long? = null
+		@field:NotNull var roleId: Long? = null,
+		@field:Size(max = 100) var permission: PermissionAccessEnum? = null
 	) : Serializable
 
 	/**

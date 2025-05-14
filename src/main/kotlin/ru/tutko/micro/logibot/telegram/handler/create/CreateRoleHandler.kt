@@ -23,12 +23,11 @@ class CreateRoleHandler(
 ) {
 
 	@CallbackMapping(CallbackQueryEnum.CREATE_ROLE)
-	fun callbackCreateRole(request: Request): Response {
-		val organizationId = request.data?.data as OrganizationId
+	fun callbackCreateRole(request: Request, organizationId: OrganizationId): Response {
 		return Response(
 			botApiMethods = listOf(
 				EditMessageText().apply {
-					messageId = UpdateUtil(request.update).getMessage()?.messageId
+					messageId = UpdateUtil(request.update).getMessage().messageId
 					chatId = request.chatId.toString()
 					text = "Введите название роли или отмените '/cancel'"
 					replyMarkup =
@@ -40,9 +39,8 @@ class CreateRoleHandler(
 	}
 
 	@InputMapping(InputEnum.CREATE_ROLE)
-	fun updateRole(request: Request): Response {
-		val organizationId = request.data?.data as OrganizationId
-		val roleName = UpdateUtil(request.update).getMessage()?.text ?: throw ValidationException()
+	fun updateRole(request: Request, organizationId: OrganizationId): Response {
+		val roleName = UpdateUtil(request.update).getMessage().text ?: throw ValidationException()
 
 		val role = roleService.createRole(organizationId.orgId, roleName)
 

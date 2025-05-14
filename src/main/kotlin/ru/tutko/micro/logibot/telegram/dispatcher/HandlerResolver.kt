@@ -44,7 +44,7 @@ class HandlerResolver(private val handlerMethods: List<Pair<Any, KFunction<*>>>)
 	private fun Annotation.matches(request: Request): Boolean {
 		return when (this) {
 			is CommandMapping -> request.update.message.entities.first().text.equals(this.command.value)
-			is CallbackMapping -> request.data?.handler == this.callbackQuery.value
+			is CallbackMapping -> this.callbackQuery.any {callback -> callback.value == request.data?.handler}
 			is InputMapping -> request.data?.handler == this.input.value
 			is ChatMemberMapping -> request.update.chatMember?.newChatMember?.status == this.chatMember.value
 			is MyChatMemberMapping -> request.update.myChatMember?.newChatMember?.status == this.myChatMember.value

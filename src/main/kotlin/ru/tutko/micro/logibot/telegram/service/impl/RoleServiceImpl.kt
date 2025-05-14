@@ -3,12 +3,18 @@ package ru.tutko.micro.logibot.telegram.service.impl
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.tutko.micro.logibot.telegram.exception.UserNotFoundException
+import ru.tutko.micro.logibot.telegram.mapper.OrganizationMapper
 import ru.tutko.micro.logibot.telegram.mapper.RoleMapper
+import ru.tutko.micro.logibot.telegram.mapper.RoleOrganizationPermissionMapper
 import ru.tutko.micro.logibot.telegram.mapper.UserMapper
 import ru.tutko.micro.logibot.telegram.mapper.UserOrganizationLinkMapper
 import ru.tutko.micro.logibot.telegram.model.dto.RoleDto
 import ru.tutko.micro.logibot.telegram.model.dto.UserOrganizationLinkDto
+import ru.tutko.micro.logibot.telegram.model.entity.RoleOrganizationPermission
+import ru.tutko.micro.logibot.telegram.model.entity.RoleOrganizationPermissionId
 import ru.tutko.micro.logibot.telegram.model.enums.role.PermissionAccessEnum
+import ru.tutko.micro.logibot.telegram.repository.OrganizationRepository
+import ru.tutko.micro.logibot.telegram.repository.RoleOrganizationPermissionRepository
 import ru.tutko.micro.logibot.telegram.repository.RoleRepository
 import ru.tutko.micro.logibot.telegram.repository.UserOrganizationLinkRepository
 import ru.tutko.micro.logibot.telegram.repository.UserRepository
@@ -19,8 +25,15 @@ import java.util.*
 class RoleServiceImpl(
 	private val roleRepository: RoleRepository,
 	private val roleMapper: RoleMapper,
+
 	private val userRepository: UserRepository,
 	private val userMapper: UserMapper,
+
+	private val roleOrganizationPermissionRepository: RoleOrganizationPermissionRepository,
+	private val roleOrganizationPermissionMapper: RoleOrganizationPermissionMapper,
+
+	private val organizationRepository: OrganizationRepository,
+	private val organizationMapper: OrganizationMapper,
 
 	private val userOrganizationLinkRepository: UserOrganizationLinkRepository,
 	private val userOrganizationLinkMapper: UserOrganizationLinkMapper
@@ -73,4 +86,38 @@ class RoleServiceImpl(
 	override fun getRolesByOrganizationId(organizationId: Long): List<RoleDto> {
 		return roleRepository.getRolesByOrganizationId(organizationId).map { role -> roleMapper.toDto(role) }
 	}
+
+	@Override
+	@Transactional
+	override fun updateRolePermission(
+		roleId: Long,
+		organizationId: Long,
+		permission: PermissionAccessEnum
+	): Boolean {
+		val role = roleRepository.getReferenceById(roleId)
+		val organization = organizationRepository.getReferenceById(organizationId)
+
+		val existing = roleOrganizationPermissionRepository.findByRoleAndOrganizationAndPermission(
+			role, organization, permission
+		)
+
+		return if (existing != null) {
+			roleOrganizationPermissionRepository.delete(existing)
+			false
+		} else {
+			val entity = RoleOrganizationPermission().apply {
+				this.id = RoleOrganizationPermissionId().apply {
+					this.organizationId = organization.id
+					this.roleId = role.id
+					this.permission = permission
+				}
+				this.role = role
+				this.organization = organization
+				this.permission = permission
+			}
+			roleOrganizationPermissionRepository.save(entity)
+			true
+		}
+	}
+
 }

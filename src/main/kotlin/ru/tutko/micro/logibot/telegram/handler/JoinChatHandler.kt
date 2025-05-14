@@ -3,7 +3,6 @@ package ru.tutko.micro.logibot.telegram.handler
 import org.springframework.beans.factory.annotation.Value
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import ru.tutko.micro.logibot.telegram.annotation.mapping.ChatMemberMapping
 import ru.tutko.micro.logibot.telegram.annotation.Handlers
 import ru.tutko.micro.logibot.telegram.annotation.mapping.CallbackMapping
@@ -16,14 +15,13 @@ import ru.tutko.micro.logibot.telegram.model.CallbackData
 import ru.tutko.micro.logibot.telegram.model.Request
 import ru.tutko.micro.logibot.telegram.model.Response
 import ru.tutko.micro.logibot.telegram.model.data.OrganizationId
-import ru.tutko.micro.logibot.telegram.model.data.Paginate
+import ru.tutko.micro.logibot.telegram.model.data.Pageable
 import ru.tutko.micro.logibot.telegram.model.data.Payload
 import ru.tutko.micro.logibot.telegram.model.enums.ChatTypeEnum
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.CallbackQueryEnum
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.InputEnum
 import ru.tutko.micro.logibot.telegram.service.ChatService
 import ru.tutko.micro.logibot.telegram.service.OrganizationService
-import ru.tutko.micro.logibot.telegram.service.redis.CallbackRedisService
 import ru.tutko.micro.logibot.telegram.util.UpdateUtil
 import kotlin.Pair
 import kotlin.String
@@ -47,7 +45,7 @@ class JoinChatHandler(
 		val navigationButtons = mutableListOf<Pair<String, CallbackData<Payload>>>()
 		navigationButtons.add("Создать новую организацию" to CallbackData(CallbackQueryEnum.SET_CHAT_CREATE_ORGANIZATION))
 		if (organizations.hasNext()) {
-			navigationButtons.add("->" to CallbackData(CallbackQueryEnum.PAGINATE_SET_CHAT_ORGANIZATION, Paginate(1)))
+			navigationButtons.add("->" to CallbackData(CallbackQueryEnum.PAGINATE_SET_CHAT_ORGANIZATION, Pageable(1)))
 		}
 
 		val buttons = telegramKeyboard.createInlineKeyboard("${request.userId}",navigationButtons + organizationButtons)
@@ -67,9 +65,9 @@ class JoinChatHandler(
 
 	@CallbackMapping(CallbackQueryEnum.PAGINATE_SET_CHAT_ORGANIZATION)
 	fun handlePaginateJoinBot(request: Request): Response {
-		val paginate = request.data?.data as Paginate
+		val pageable = request.data?.data as Pageable
 
-		val organizations = organizationService.getOrganizationsByUserId(request.userId, paginate.page)
+		val organizations = organizationService.getOrganizationsByUserId(request.userId, pageable.page)
 
 		val organizationButtons: List<Pair<String, CallbackData<Payload>>> = organizations.content.map { org ->
 			org.name!! to CallbackData(CallbackQueryEnum.SET_CHAT_ORGANIZATION, OrganizationId(org.id!!))
@@ -78,10 +76,10 @@ class JoinChatHandler(
 		val navigationButtons = mutableListOf<Pair<String, CallbackData<Payload>>>()
 		navigationButtons.add("Создать новую организацию" to CallbackData(CallbackQueryEnum.SET_CHAT_CREATE_ORGANIZATION))
 		if (organizations.hasPrevious()) {
-			navigationButtons.add("<-" to CallbackData(CallbackQueryEnum.PAGINATE_SET_CHAT_ORGANIZATION, Paginate(paginate.page - 1)))
+			navigationButtons.add("<-" to CallbackData(CallbackQueryEnum.PAGINATE_SET_CHAT_ORGANIZATION, Pageable(pageable.page - 1)))
 		}
 		if (organizations.hasNext()) {
-			navigationButtons.add("->" to CallbackData(CallbackQueryEnum.PAGINATE_SET_CHAT_ORGANIZATION, Paginate(paginate.page - 1)))
+			navigationButtons.add("->" to CallbackData(CallbackQueryEnum.PAGINATE_SET_CHAT_ORGANIZATION, Pageable(pageable.page - 1)))
 		}
 
 		val buttons = telegramKeyboard.createInlineKeyboard("${request.userId}", navigationButtons + organizationButtons)

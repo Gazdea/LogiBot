@@ -65,7 +65,9 @@ class OrganizationServiceImpl(
                     RoleOrganizationPermissionDto(
                         id = RoleOrganizationPermissionDto.RoleOrganizationPermissionIdDto(
                             organizationId = organizationId,
-                            roleId = role.id
+                            roleId = role.id,
+                            permission = permissionEnum
+
                         ),
                         organization = RoleOrganizationPermissionDto.OrganizationDto1(organizationId),
                         role = RoleOrganizationPermissionDto.RoleDto(id = role.id),

@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class OrganizationPaginate(
-	val organizationId: Long,
-	val paginate: Paginate
+	val orgId: Long,
+	val pageable: Pageable = Pageable(),
 ): Payload()

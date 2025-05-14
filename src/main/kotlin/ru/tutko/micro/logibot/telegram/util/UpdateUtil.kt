@@ -6,6 +6,7 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.User
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import ru.tutko.micro.logibot.telegram.exception.ValidationException
 import ru.tutko.micro.logibot.telegram.model.CallbackData
 import ru.tutko.micro.logibot.telegram.model.data.Payload
 import ru.tutko.micro.logibot.telegram.model.dto.RoleDto
@@ -28,13 +29,13 @@ class UpdateUtil(private val update: Update) {
 		return handlerType
 	}
 
-	fun getMessage(): Message? {
+	fun getMessage(): Message {
 		return when {
 			update.hasMessage() -> update.message
 			update.hasCallbackQuery() -> update.callbackQuery.message
 			update.hasEditedMessage() -> update.editedMessage
-			update.hasMyChatMember() -> null
-			update.hasChatMember() -> null
+			update.hasMyChatMember() -> throw ValidationException("")
+			update.hasChatMember() -> throw ValidationException("")
 
 			else -> update.message
 		}

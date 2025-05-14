@@ -8,22 +8,21 @@ import ru.tutko.micro.logibot.telegram.model.enums.role.PermissionAccessEnum
 @Entity
 @Table(name = "role_organization_permission")
 class RoleOrganizationPermission {
+
 	@EmbeddedId
-	var id: RoleOrganizationPermissionId? = null
+	lateinit var id: RoleOrganizationPermissionId
 
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@MapsId("organizationId")
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "organization_id", nullable = false)
-	var organization: Organization? = null
+	lateinit var organization: Organization
 
-	@MapsId("roleId")
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@MapsId("roleId")
 	@JoinColumn(name = "role_id", nullable = false)
-	var role: Role? = null
+	lateinit var role: Role
 
-	@Size(max = 100)
-	@NotNull
-	@Column(name = "permission", nullable = false, length = 100)
 	@Enumerated(EnumType.STRING)
-	var permission: PermissionAccessEnum? = null
+	@Column(name = "permission", nullable = false, length = 100, insertable = false, updatable = false)
+	lateinit var permission: PermissionAccessEnum
 }
