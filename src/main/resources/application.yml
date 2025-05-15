@@ -7,14 +7,14 @@ spring:
     default-timeout: 30 # Таймаут транзакций в секундах
     isolation-level: DEFAULT # Уровень изоляции транзакций, например, REPEATABLE_READ/READ_COMMITTED/SERIALIZABLE
 
-  security:
-    user:
-      name: admin # Имя пользователя для базовой авторизации в dev-среде
-      password: secret # Пароль для базовой авторизации в dev-среде
-    oauth2:
-      resource server:
-        jwt:
-          issuer-uri: https://auth.example.com # URL авторизационного сервера для проверки JWT-токенов
+#  security:
+#    user:
+#      name: admin # Имя пользователя для базовой авторизации в dev-среде
+#      password: secret # Пароль для базовой авторизации в dev-среде
+#    oauth2:
+#      resource server:
+#        jwt:
+#          issuer-uri: https://auth.example.com # URL авторизационного сервера для проверки JWT-токенов
 
   datasource:
     driver-class-name: org.postgresql.Driver # Драйвер для подключения к PostgreSQL
@@ -36,10 +36,10 @@ spring:
       hibernate:
         format_sql: false # Отключение форматирования SQL-запросов
         generate_statistics: false # Отключение сбора статистики Hibernate для повышения производительности
-        default_schema: logistic_v1 # Схема базы данных по умолчанию
+        default_schema: public # Схема базы данных по умолчанию
     hibernate:
       ddl-auto: none # Отключение автоматического управления схемой базы данных (создание/обновление таблиц)
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+#    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
   cache:
     type: redis # Тип используемого кэша, например, caffeine, redis, ehcache
@@ -59,12 +59,15 @@ spring:
       password: ${MONGO_PASSWORD:logistic}
       authentication-database: ${MONGO_AUTH:admin}
 
+webServer:
+  domainName: ${WEB_DOMAIN_NAME}
+
 telegrambots:
   enabled: true # Включение TelegramBots
   bots:
     - username: ${TELEGRAM_BOT_USERNAME} # Имя пользователя бота
       token: ${TELEGRAM_BOT_TOKEN} # Токен доступа бота
-#      path: ${TELEGRAM_WEBHOOK_PATH:https://your-server.com/webhook} # URL для вебхука (если используется)
+#      path: ${TELEGRAM_WEBHOOK_PATH} # URL для вебхука (если используется)
 
 management:
   endpoints:
@@ -82,17 +85,18 @@ management:
       description: API для логистической компании # Описание приложения для эндпоинта /actuator/info
 
 logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %highlight(%-5level) %cyan(%logger{36}) - %msg%n"
   level:
-    com:
-      zaxxer:
-        hikari: WARN # Логирование сообщений от Hikari на уровне WARN
-    org:
-      telegram: INFO # Логирование сообщений от Telegram на уровне INFO
-      hibernate: WARN # Логирование сообщений от Hibernate на уровне WARN
-      springframework:
-        security: WARN # Логирование сообщений Spring Security на уровне WARN
+    ru.tutko.micro.logibot.telegram.dispatcher.UpdateDispatcher: INFO
+    root: INFO  # Уровень логирования по умолчанию
+    ru.tutko.micro.logibot: DEBUG  # Детальное логирование для проекта
+    com.zaxxer.hikari: WARN  # Логирование HikariCP на уровне WARN
+    org.telegram: INFO  # Telegram API
+    org.hibernate: WARN  # Hibernate
+    org.springframework.security: WARN  # Spring Security
   file:
-    name: /logistic # Путь к лог-файлу
+    name: /var/log/logistic-bot.log  # Полный путь к файлу логов
 
 springdoc:
   api-docs:

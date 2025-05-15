@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: recreate-role-org-permission-pk
+      author: mikhail.tutko
+      changes:
+        - dropPrimaryKey:
+            tableName: role_table_permission
+            constraintName: role_table_permission_pk
+        - addPrimaryKey:
+            tableName: role_table_permission
+            columnNames: role_id, table_id, permission
+            constraintName: role_table_permission_pk

@@ -3,11 +3,7 @@ services:
   postgres_app:
     container_name: postgres_container
     image: postgres:latest
-    environment:
-      POSTGRES_USER: logistic
-      POSTGRES_PASSWORD: logistic
-      POSTGRES_DB: logistic
-      PGDATA: /data/postgres
+    env_file: .env
     volumes:
       - postgres_app:/data/postgres
     networks:
@@ -23,9 +19,7 @@ services:
     restart: always
     ports:
       - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: logistic
-      MONGO_INITDB_ROOT_PASSWORD: logistic
+    env_file: .env
     networks:
       - logistic_network
     volumes:
@@ -35,16 +29,31 @@ services:
   redis:
     container_name: redis_container
     image: redis:7.4.2-alpine
+    restart: always
     ports:
       - "6379:6379"
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
+    env_file: .env
     networks:
       - logistic_network
     command: [ "redis-server", "--save", "" ]
 
+  app:
+    build:
+      context: ./
+    image: kotlin-spring-app
+    container_name: LogiBot
+    ports:
+      - "8080:8080"
+    networks:
+      - dev-net
+      - logistic_network
+    env_file: .env
+    restart: "no"
+
 networks:
   logistic_network:
+    driver: bridge
+  dev-net:
     driver: bridge
 
 volumes:
