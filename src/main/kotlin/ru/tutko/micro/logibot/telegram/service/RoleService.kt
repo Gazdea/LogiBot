@@ -2,6 +2,7 @@ package ru.tutko.micro.logibot.telegram.service
 
 import ru.tutko.micro.logibot.telegram.model.dto.RoleDto
 import ru.tutko.micro.logibot.telegram.model.enums.role.PermissionAccessEnum
+import ru.tutko.micro.logibot.telegram.model.enums.role.TablePermissionAccessEnum
 
 interface RoleService {
 
@@ -37,6 +38,20 @@ interface RoleService {
 	): Boolean
 
 	/**
+	 * Проверяет, обладает ли пользователь заданным правом доступа в рамках таблицы.
+	 *
+	 * @param tableId Id таблицы
+	 * @param externalUserId ID пользователя.
+	 * @param tablePermission Проверяемое разрешение.
+	 * @return true — если разрешение у пользователя есть, иначе false.
+	 */
+	fun userExistsTablePermission(
+		tableId: Long,
+		externalUserId: Long,
+		tablePermission: TablePermissionAccessEnum
+	): Boolean
+
+	/**
 	 * Создаёт новую роль в рамках конкретной организации.
 	 *
 	 * @param organizationId ID организации.
@@ -65,5 +80,19 @@ interface RoleService {
 		roleId: Long,
 		organizationId: Long,
 		permission: PermissionAccessEnum
+	): Boolean
+
+	/**
+	 * Обновляет (назначает или снимает) разрешение у роли.
+	 *
+	 * @param roleId ID роли.
+	 * @param tableId ID таблицы.
+	 * @param permission Разрешение, которое нужно назначить или снять.
+	 * @return true — если операция прошла успешно, иначе false.
+	 */
+	fun updateRolePermissionByTableId(
+		roleId: Long,
+		tableId: Long,
+		permission: TablePermissionAccessEnum
 	): Boolean
 }

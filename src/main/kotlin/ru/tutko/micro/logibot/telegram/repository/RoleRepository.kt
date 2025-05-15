@@ -20,4 +20,6 @@ interface RoleRepository : JpaRepository<Role, Long>, JpaSpecificationExecutor<R
 	fun findRoleById(id: Long): Role
 
 	fun findByOrganization_UserOrganizationLinks(userOrganizationLinks: UserOrganizationLink): Optional<Role>
+
+
 }

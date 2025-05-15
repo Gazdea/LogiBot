@@ -3,6 +3,8 @@ package ru.tutko.micro.logibot.telegram.service
 import org.springframework.data.domain.Page
 import ru.tutko.micro.logibot.telegram.model.dto.DataTableDto
 import ru.tutko.micro.logibot.telegram.model.dto.TableColumnDto
+import ru.tutko.micro.logibot.telegram.model.dto.TableDataMetadatumDto
+import ru.tutko.micro.logibot.telegram.model.entity.TableDataMetadatum
 import ru.tutko.micro.logibot.telegram.model.enums.table.ColumnTypeEnum
 import ru.tutko.micro.logibot.telegram.model.table.FilledTableRow
 import java.time.Instant
@@ -115,10 +117,10 @@ interface TableService {
 	 * Возвращает одну заполненную строку по UUID.
 	 *
 	 * @param tableId ID таблицы.
-	 * @param dataUUID UUID записи в Mongo.
+	 * @param dataId ID записи в Mongo.
 	 * @return Заполненная строка.
 	 */
-	fun getMetadataEntry(tableId: Long, dataUUID: UUID): FilledTableRow
+	fun getMetadataEntry(tableId: Long, dataId: Long): FilledTableRow
 
 	/**
 	 * Добавляет новую строку заполненных данных в таблицу от имени пользователя.
@@ -128,7 +130,7 @@ interface TableService {
 	 * @param data Заполненные данные.
 	 * @return Обновлённое DTO таблицы.
 	 */
-	fun addMetadataTableColumn(tableId: Long, userId: Long, data: FilledTableRow): DataTableDto
+	fun addMetadataTableColumn(tableId: Long, userId: Long, data: Map<Long, String>): TableDataMetadatumDto
 
 	/**
 	 * Удаляет одну строку заполненных данных по UUID и пользователю.
@@ -170,4 +172,7 @@ interface TableService {
 		page: Int,
 		size: Int = 8
 	): Page<FilledTableRow>
+
+
+	fun getTableDataMetadata(tableId: Long, page: Int, size: Int = 8): Page<TableDataMetadatumDto>
 }

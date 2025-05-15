@@ -13,4 +13,6 @@ interface TableColumnRepository : JpaRepository<TableColumn, Long>, JpaSpecifica
 
 
 	fun findByTable_Id(id: Long, pageable: Pageable): Page<TableColumn>
+
+	fun findAllByTableId(tableId: Long): List<TableColumn>
 }

@@ -1,7 +1,11 @@
 package ru.tutko.micro.logibot.telegram.service.impl
 
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.tutko.micro.logibot.telegram.exception.NotFoundException
@@ -15,7 +19,12 @@ import ru.tutko.micro.logibot.telegram.mapper.TableDataMetadatumMapper
 import ru.tutko.micro.logibot.telegram.mapper.UserMapper
 import ru.tutko.micro.logibot.telegram.model.dto.DataTableDto
 import ru.tutko.micro.logibot.telegram.model.dto.TableColumnDto
+import ru.tutko.micro.logibot.telegram.model.dto.TableDataMetadatumDto
+import ru.tutko.micro.logibot.telegram.model.dto.mongo.ColumnData
+import ru.tutko.micro.logibot.telegram.model.dto.mongo.TableMetadata
+import ru.tutko.micro.logibot.telegram.model.entity.TableDataMetadatum
 import ru.tutko.micro.logibot.telegram.model.enums.table.ColumnTypeEnum
+import ru.tutko.micro.logibot.telegram.model.table.FilledCell
 import ru.tutko.micro.logibot.telegram.model.table.FilledTableRow
 import ru.tutko.micro.logibot.telegram.repository.DataTableRepository
 import ru.tutko.micro.logibot.telegram.repository.OrganizationRepository
@@ -25,6 +34,7 @@ import ru.tutko.micro.logibot.telegram.repository.TableDataMetadataRepository
 import ru.tutko.micro.logibot.telegram.repository.UserRepository
 import ru.tutko.micro.logibot.telegram.service.TableService
 import ru.tutko.micro.logibot.telegram.service.mongo.DynamicCollectionService
+import ru.tutko.micro.logibot.telegram.service.mongo.impl.DynamicCollectionServiceImpl
 import java.time.Instant
 import java.util.UUID
 
@@ -50,6 +60,7 @@ class TableServiceImpl(
 	private val roleRepository: RoleRepository,
 	private val roleMapper: RoleMapper,
 
+	private val mongoTemplate: MongoTemplate,
 	): TableService {
 
 	@Transactional
@@ -110,6 +121,7 @@ class TableServiceImpl(
 		return tableColumnRepository.findByTable_Id(tableId, pageable).map { tableColumnMapper.toDto(it) }
 	}
 
+	@Transactional
 	override fun getTableColumn(tableColumnId: Long): TableColumnDto {
 		return tableColumnMapper.toDto(tableColumnRepository.findById(tableColumnId).orElseThrow { NotFoundException("Колонка таблицы не найдена") })
 	}
@@ -146,22 +158,96 @@ class TableServiceImpl(
 	}
 
 	override fun getMetadataTable(tableId: Long, page: Int, size: Int): Page<FilledTableRow> {
-		TODO("Not yet implemented")
+		val table = dataTableRepository.findById(tableId).orElseThrow { NotFoundException("Таблица не найдена") }
+
+		val mongoIds = table.tableDataMetadata
+			.mapNotNull { it.mongoDocumentId }
+
+		val query = Query(Criteria.where("_id").`in`(mongoIds))
+			.with(PageRequest.of(page, size))
+
+		val total = mongoTemplate.count(query, TableMetadata::class.java)
+		val documents = mongoTemplate.find(query, TableMetadata::class.java)
+
+		val result = documents.map { doc ->
+			val data = doc.columns.associate { col ->
+				col.columnId to FilledCell(
+					cellName = col.name,
+					fieldType = ColumnTypeEnum.valueOf(col.type),
+					value = col.value
+				)
+			}
+			FilledTableRow(data = data)
+		}
+
+		return PageImpl(result, PageRequest.of(page, size), total)
 	}
 
+	@Transactional
 	override fun getMetadataEntry(
 		tableId: Long,
-		dataUUID: UUID
+		dataId: Long
 	): FilledTableRow {
-		TODO("Not yet implemented")
+		val table = dataTableRepository.findById(tableId).orElseThrow { NotFoundException("Таблица не найдена") }
+		val metadata = table.tableDataMetadata
+			.firstOrNull { it.id == dataId }
+			?: throw NotFoundException("Запись не найдена")
+		val mongoId = metadata.mongoDocumentId
+			?: throw IllegalStateException("mongoDocumentId отсутствует")
+
+		val doc = mongoTemplate.findById(mongoId, TableMetadata::class.java)
+			?: throw NotFoundException("Mongo-документ не найден")
+
+		val columnMap = tableColumnRepository.findAllByTableId(tableId)
+			.associateBy { it.columnName }
+
+		val data = doc.columns.mapNotNull { col ->
+			val column = columnMap[col.name] ?: return@mapNotNull null
+			column.id!! to FilledCell(
+				cellName = col.name,
+				fieldType = ColumnTypeEnum.valueOf(col.type),
+				value = col.value
+			)
+		}.toMap()
+
+		return FilledTableRow(data = data)
+
+
 	}
 
-	override fun addMetadataTableColumn(
-		tableId: Long,
-		userId: Long,
-		data: FilledTableRow
-	): DataTableDto {
-		TODO("Not yet implemented")
+	override fun addMetadataTableColumn(tableId: Long, userId: Long, data: Map<Long, String>): TableDataMetadatumDto {
+		val table = dataTableRepository.findById(tableId).orElseThrow { NotFoundException("Таблица не найдена") }
+		val user = userRepository.findByExternalUserId(userId).orElseThrow { UserNotFoundException() }
+
+		val columnList = tableColumnRepository.findAllById(data.keys)
+
+		val columns = columnList.mapNotNull { column ->
+			val value = data[column.id] ?: return@mapNotNull null
+			ColumnData(
+				columnId = column.id!!,
+				name = column.columnName!!,
+				type = column.columnType!!.name,
+				value = value
+			)
+		}
+
+		val metadata = TableMetadata(
+			tableName = table.tableName!!,
+			columns = columns
+		)
+
+		val saved = mongoTemplate.save(metadata)
+
+		return tableDataMetadatumMapper.toDto(
+			tableDataMetadataRepository.save(
+				tableDataMetadatumMapper.toEntity(
+				TableDataMetadatumDto().apply {
+			this.table = TableDataMetadatumDto.DataTableDto().apply { this.id = table.id!! }
+			this.user =  TableDataMetadatumDto.UserDto().apply { this.id = user.id!! }
+			this.action = "Save"
+			this.mongoDocumentId = saved.id
+
+				})))
 	}
 
 	override fun deleteMetadataTableColumn(
@@ -190,5 +276,12 @@ class TableServiceImpl(
 		size: Int
 	): Page<FilledTableRow> {
 		TODO("Not yet implemented")
+	}
+
+	@Transactional
+	override fun getTableDataMetadata(tableId: Long, page: Int, size: Int): Page<TableDataMetadatumDto> {
+		val table = dataTableRepository.findById(tableId).orElseThrow { NotFoundException("Таблица не найдена") }
+		val pageable = PageRequest.of(page, size)
+		return tableDataMetadataRepository.findByTable_Id(table.id!!, pageable).map { data -> tableDataMetadatumMapper.toDto(data) }
 	}
 }

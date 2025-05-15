@@ -11,4 +11,6 @@ enum class InputEnum(val value: String) {
     CREATE_TABLE("createTable"),
 
     SET_NAME_COLUMN("setNameColumn"),
+
+    SET_DATA_COLUMN("setDataColumn"),
 }

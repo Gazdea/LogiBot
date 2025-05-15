@@ -57,8 +57,6 @@ enum class CallbackQueryEnum(val value: String, val permission: PermissionAccess
 
     CREATE_TABLE("createTable", PermissionAccessEnum.MANAGE_TABLES),
 
-//    GET_TABLE_COLUMN("getTableColumn", PermissionAccessEnum.VIEW_TABLES, ),
-
     GET_DATA_TABLE_COLUMN("getDataTableColumn", PermissionAccessEnum.VIEW_TABLES, TablePermissionAccessEnum.VIEW_METADATA),
 
     ADD_DATA_TABLE_COLUMN("addDataTableColumn", PermissionAccessEnum.MANAGE_TABLES, TablePermissionAccessEnum.FILL_METADATA),
@@ -73,4 +71,14 @@ enum class CallbackQueryEnum(val value: String, val permission: PermissionAccess
     SET_NAME_COLUMN("setNameColumn", PermissionAccessEnum.MANAGE_TABLES, TablePermissionAccessEnum.EDIT_TABLE),
 
     GET_COLUMN_TABLE("getColumnTable", PermissionAccessEnum.MANAGE_TABLES, TablePermissionAccessEnum.EDIT_TABLE),
+
+    DELETE_COLUMN("deleteColumn", PermissionAccessEnum.MANAGE_TABLES, TablePermissionAccessEnum.EDIT_TABLE),
+
+    GET_TABLE_ROLE("getTableRole", PermissionAccessEnum.MANAGE_ROLES),
+
+    ADD_METADATA_COLUMN("addMetadataColumn", PermissionAccessEnum.MANAGE_TABLES, TablePermissionAccessEnum.FILL_METADATA),
+
+    SAVE_METADATA("saveMetadata", PermissionAccessEnum.MANAGE_TABLES, TablePermissionAccessEnum.FILL_METADATA),
+
+    GET_DATA_TABLE("getDataTable", PermissionAccessEnum.MANAGE_ROLES, TablePermissionAccessEnum.VIEW_METADATA),
 }

@@ -23,7 +23,7 @@ class RoleTablePermission {
 
 	@Size(max = 100)
 	@NotNull
-	@Column(name = "permission", nullable = false, length = 100)
+	@Column(name = "permission", nullable = false, length = 100, insertable = false, updatable = false)
 	@Enumerated(EnumType.STRING)
 	var permission: TablePermissionAccessEnum? = null
 }
