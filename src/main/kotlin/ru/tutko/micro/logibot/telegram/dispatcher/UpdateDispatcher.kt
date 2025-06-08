@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod
 import org.telegram.telegrambots.meta.api.objects.Update
+import ru.tutko.micro.logibot.telegram.model.Response
 import ru.tutko.micro.logibot.telegram.util.UpdateUtil
 
 @Component
@@ -18,7 +19,7 @@ class UpdateDispatcher(
 ) {
     private val logger = LoggerFactory.getLogger(UpdateDispatcher::class.java)
 
-    fun dispatch(update: Update): List<BotApiMethod<*>>? {
+    fun dispatch(update: Update): Response? {
         val chatId = UpdateUtil(update).getChat().id
         return try {
             validator.validate(update)
@@ -32,10 +33,12 @@ class UpdateDispatcher(
                 response.botApiMethods += AnswerCallbackQuery(update.callbackQuery.id)
             }
 
-            response.botApiMethods
+            response
         } catch (e: Exception) {
             logger.error("Ошибка при обработке update: ${e.message}", e)
             errorHandler.handle(e, chatId.toString())
+            null
         }
     }
+
 }

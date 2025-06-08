@@ -1,11 +1,17 @@
 package ru.tutko.micro.logibot.telegram.handler
 
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
+import org.telegram.telegrambots.meta.api.objects.InputFile
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import ru.tutko.micro.logibot.telegram.annotation.Handlers
 import ru.tutko.micro.logibot.telegram.annotation.mapping.CallbackMapping
+import ru.tutko.micro.logibot.telegram.annotation.mapping.CommandMapping
 import ru.tutko.micro.logibot.telegram.annotation.mapping.InputMapping
 import ru.tutko.micro.logibot.telegram.component.TelegramKeyboard
+import ru.tutko.micro.logibot.telegram.exception.ValidationException
 import ru.tutko.micro.logibot.telegram.model.CallbackData
 import ru.tutko.micro.logibot.telegram.model.Request
 import ru.tutko.micro.logibot.telegram.model.Response
@@ -22,19 +28,67 @@ import ru.tutko.micro.logibot.telegram.model.data.TableDataPaginate
 import ru.tutko.micro.logibot.telegram.model.data.TableSaveMetaData
 import ru.tutko.micro.logibot.telegram.model.entity.Organization
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.CallbackQueryEnum
+import ru.tutko.micro.logibot.telegram.model.enums.mapping.CommandEnum
 import ru.tutko.micro.logibot.telegram.model.enums.mapping.InputEnum
 import ru.tutko.micro.logibot.telegram.model.enums.table.ColumnTypeEnum
+import ru.tutko.micro.logibot.telegram.service.GenerateExcelReport
 import ru.tutko.micro.logibot.telegram.service.OrganizationService
 import ru.tutko.micro.logibot.telegram.service.TableService
 import ru.tutko.micro.logibot.telegram.util.UpdateUtil
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Handlers
 class TableHandler(
 	val organizationService: OrganizationService,
 	val telegramKeyboard: TelegramKeyboard,
 	val tableService: TableService,
+	val generateExcelReport: GenerateExcelReport
 ) {
 
+	@CommandMapping(CommandEnum.TABLE)
+	fun commandTable(request: Request): Response {
+		val buttons = getPaginateTable(userId = request.userId)
+
+		return Response(
+			botApiMethods = listOf(SendMessage().apply {
+				chatId = request.chatId.toString()
+				text = "👋 Привет! Вот доступные вам таблицы."
+				replyMarkup = buttons
+			})
+		)
+	}
+	@CallbackMapping(CallbackQueryEnum.PAGINATE_COMMAND_GET_TABLE)
+	fun paginateTable(request: Request, pageable: Pageable): Response {
+		val buttons = getPaginateTable(pageable, request.userId)
+
+		return Response(
+			botApiMethods = listOf(EditMessageText().apply {
+				messageId = UpdateUtil(request.update).getMessage().messageId
+				chatId = request.chatId.toString()
+				text = "👋  Привет! Вот доступные вам таблицы."
+				replyMarkup = buttons
+			})
+		)
+	}
+	private fun getPaginateTable(pageable: Pageable = Pageable(0), userId: Long): InlineKeyboardMarkup {
+		val tables = tableService.getTableByUser(userId, pageable.page)
+		val tableButtons: List<List<Pair<String, CallbackData<Payload>>>> = tables.content.map { table ->
+			listOf(table.tableName!! to CallbackData(CallbackQueryEnum.GET_TABLE, TableData(table.organization!!.id!!, table.id!!)))
+		}
+
+		val navigationButtons = mutableListOf<Pair<String, CallbackData<Payload>>>()
+
+		if (tables.hasPrevious()) {
+			navigationButtons.add("⬅️ Назад" to CallbackData(CallbackQueryEnum.PAGINATE_COMMAND_GET_TABLE, pageable.decreasePage()))
+		}
+		if (tables.hasNext()) {
+			navigationButtons.add("Вперёд ➡️" to CallbackData(CallbackQueryEnum.PAGINATE_COMMAND_GET_TABLE, pageable.increasePage()))
+		}
+
+		return  telegramKeyboard.createInlineKeyboard("$userId", listOf(navigationButtons) + tableButtons)
+	}
 
 	@CallbackMapping(CallbackQueryEnum.PAGINATE_GET_TABLES)
 	fun callbackGetTables(request: Request, organization: OrganizationPaginate): Response {
@@ -307,7 +361,25 @@ class TableHandler(
 	@InputMapping(InputEnum.SET_DATA_COLUMN)
 	fun setDataColumnInput(request: Request, columnTableSaveMetaData: ColumnTableSaveMetaData): Response {
 		val columnText = request.update.message.text
+
+		val columnId = columnTableSaveMetaData.columnId
 		val tableSaveMetaData = columnTableSaveMetaData.tableSaveMetaData
+
+		val column = tableService.getTableColumn(columnId)
+
+		val columnType = column.columnType
+
+		if (!columnType!!.isValid(columnText)) {
+			return Response(
+				botApiMethods = listOf(
+					SendMessage().apply {
+						chatId = request.chatId.toString()
+						text = "Некорректное значение для типа ${columnType.value}. Повторите ввод."
+					}
+				)
+			)
+		}
+
 		tableSaveMetaData.filledTableRow[columnTableSaveMetaData.columnId] = columnText
 
 		val tablesColumn = tableService.getTableColumns(tableSaveMetaData.tableData.tableId, tableSaveMetaData.pageable.page)
@@ -382,9 +454,13 @@ class TableHandler(
 	fun getColumnMetadata(request: Request, tableDataPaginate: TableDataPaginate): Response {
 		val metadatas = tableService.getTableDataMetadata(tableDataPaginate.tableData.tableId, page = tableDataPaginate.pageable.page)
 
+		val formatter = DateTimeFormatter.ofPattern("d MMMM yyyy, HH:mm")
+			.withLocale(Locale("ru"))
+			.withZone(ZoneId.systemDefault())
+
 		val dataButtons: List<List<Pair<String, CallbackData<Payload>>>> = metadatas.content.map { data ->
 			listOf(
-				data.createdAt.toString() to CallbackData(
+				"${data.user!!.username} ${formatter.format(data.createdAt)}" to CallbackData(
 					CallbackQueryEnum.GET_DATA_TABLE,
 					MetadataTableData(tableDataPaginate.tableData.organizationId, tableDataPaginate.tableData.tableId, data.id!!)
 				)
@@ -467,8 +543,60 @@ class TableHandler(
 	}
 
 	@CallbackMapping(CallbackQueryEnum.GET_REPORT_TABLE)
-	fun getReportTable(request: Request, tableDataPaginate: TableDataPaginate): Response {
-		TODO()
+	fun getReportTable(request: Request, tableData: TableData): Response {
+		val file = generateExcelReport.generateReportByTable(tableData.tableId)
+
+		val table = tableService.getTable(tableData.tableId)
+
+		val navigationButtons = mutableListOf<Pair<String, CallbackData<Payload>>>()
+
+		navigationButtons.add(
+			"Назад" to CallbackData(
+				CallbackQueryEnum.PAGINATE_GET_TABLES, OrganizationPaginate(
+					tableData.organizationId,
+					Pageable()
+				)
+			)
+		)
+
+		navigationButtons.add("Добавить запись" to CallbackData(CallbackQueryEnum.ADD_DATA_TABLE_COLUMN, TableSaveMetaData(tableData)))
+
+		navigationButtons.add(
+			"Посмотреть все записи" to CallbackData(
+				CallbackQueryEnum.GET_DATA_TABLE_COLUMN,
+				TableDataPaginate(tableData)
+			)
+		)
+
+		navigationButtons.add("Редактировать таблицу" to CallbackData(CallbackQueryEnum.EDIT_TABLE_COLUMN,
+			TableDataPaginate(tableData)))
+
+		navigationButtons.add(
+			"Редактировать роли таблицы" to CallbackData(
+				CallbackQueryEnum.MANAGE_TABLE_PERMISSIONS,
+				TableDataPaginate(tableData)
+			)
+		)
+
+		navigationButtons.add("Выгрузить записи" to CallbackData(CallbackQueryEnum.GET_REPORT_TABLE, tableData))
+
+		val buttons = telegramKeyboard.createInlineKeyboardRow("${request.userId}", navigationButtons)
+
+		return Response(
+			botApiMethods = listOf(
+				EditMessageText().apply {
+					messageId = UpdateUtil(request.update).getMessage().messageId
+					chatId = request.chatId.toString()
+					text = "Таблица ${table.tableName}, выберите что хотите сделать"
+					replyMarkup = buttons
+				}),
+			partialBotApiMethod = listOf(SendDocument().apply {
+					chatId = request.chatId.toString()
+					caption = "Вот ваш отчёт 📊"
+					document = InputFile(file)
+				}
+			)
+		)
 	}
 
 	@InputMapping(InputEnum.CREATE_TABLE)

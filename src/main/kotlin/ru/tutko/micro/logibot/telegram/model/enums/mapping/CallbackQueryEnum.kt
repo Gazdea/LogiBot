@@ -11,6 +11,8 @@ enum class CallbackQueryEnum(val value: String, val permission: PermissionAccess
 
     SETTINGS("settings"),
 
+    PAGINATE_COMMAND_GET_TABLE("paginateCommandGetTable"),
+
     CANCEL("cancelWaitForInput"),
     CREATE_ORGANIZATION("createOrganization"),
 
@@ -81,4 +83,5 @@ enum class CallbackQueryEnum(val value: String, val permission: PermissionAccess
     SAVE_METADATA("saveMetadata", PermissionAccessEnum.MANAGE_TABLES, TablePermissionAccessEnum.FILL_METADATA),
 
     GET_DATA_TABLE("getDataTable", PermissionAccessEnum.MANAGE_ROLES, TablePermissionAccessEnum.VIEW_METADATA),
+
 }

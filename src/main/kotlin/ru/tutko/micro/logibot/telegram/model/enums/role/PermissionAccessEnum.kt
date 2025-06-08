@@ -1,7 +1,7 @@
 package ru.tutko.micro.logibot.telegram.model.enums.role
 
-enum class PermissionAccessEnum(val nameRu: String) {
-    CREATOR("Создатель"), // Имеет полные права
+enum class PermissionAccessEnum(val nameRu: String, val isVisible: Boolean = true) {
+    CREATOR("Создатель", false), // Имеет полные права
 
     SETTINGS("Доступ к настройкам организации"), // имеет право изменять настройки организации
 
@@ -19,7 +19,7 @@ enum class PermissionAccessEnum(val nameRu: String) {
     VIEW_LOGS("Просмотр логов"),  // имеет право просматривать логи
     CREATE_REPORT("Создание отчётов"),  // имеет право создавать отчёт
 
-    JOINER("Запрос на присоединение"); // Пользователь сделал запрос на присоединение
+    JOINER("Приглашенный"); // Пользователь сделал запрос на присоединение
 
     companion object {
         private val implications: Map<PermissionAccessEnum, Set<PermissionAccessEnum>> = mapOf(

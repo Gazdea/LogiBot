@@ -6,8 +6,17 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import ru.tutko.micro.logibot.telegram.model.dto.DataTableDto
 import ru.tutko.micro.logibot.telegram.model.entity.DataTable
+import ru.tutko.micro.logibot.telegram.model.entity.User
 
 interface DataTableRepository : JpaRepository<DataTable, Long>, JpaSpecificationExecutor<DataTable> {
 
 	fun findByOrganization_Id(id: Long, pageable: Pageable): Page<DataTable>
+
+	fun findAllByOrganizationId(organizationId: Long): List<DataTable>
+
+
+	fun findByIdIn(ids: List<Long>, pageable: Pageable): Page<DataTable>
+
+
+	fun findByOrganization_UserOrganizationLinks_User(user: User, pageable: Pageable): Page<DataTable>
 }

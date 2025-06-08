@@ -62,7 +62,7 @@ class StartHandler(
 
         return Response(
             botApiMethods = listOf(EditMessageText().apply {
-                messageId = UpdateUtil(request.update).getMessage()?.messageId ?: throw ValidationException()
+                messageId = UpdateUtil(request.update).getMessage().messageId
                 chatId = request.chatId.toString()
                 text = "👋 Привет! Вот организации в которых ты есть."
                 replyMarkup = buttons

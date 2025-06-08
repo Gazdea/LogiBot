@@ -108,7 +108,7 @@ class RoleHandler(
 				.toSet()
 
 			val permissionsView = Paginate(
-				items = PermissionAccessEnum.entries.toList(),
+				items = PermissionAccessEnum.entries.filter { it.isVisible }.toList(),
 				page = roleData.pageablePermission.page,
 				size = 8
 			)
@@ -249,7 +249,7 @@ class RoleHandler(
 			.toSet()
 
 		val permissionsView = Paginate(
-			items = TablePermissionAccessEnum.entries.toList(),
+			items = TablePermissionAccessEnum.entries.filter { it.isVisible }.toList(),
 			page = roleTableData.pageable.page,
 			size = 8
 		)

@@ -23,6 +23,8 @@ import ru.tutko.micro.logibot.telegram.model.dto.TableDataMetadatumDto
 import ru.tutko.micro.logibot.telegram.model.dto.mongo.ColumnData
 import ru.tutko.micro.logibot.telegram.model.dto.mongo.TableMetadata
 import ru.tutko.micro.logibot.telegram.model.entity.TableDataMetadatum
+import ru.tutko.micro.logibot.telegram.model.enums.role.PermissionAccessEnum
+import ru.tutko.micro.logibot.telegram.model.enums.role.TablePermissionAccessEnum
 import ru.tutko.micro.logibot.telegram.model.enums.table.ColumnTypeEnum
 import ru.tutko.micro.logibot.telegram.model.table.FilledCell
 import ru.tutko.micro.logibot.telegram.model.table.FilledTableRow
@@ -31,6 +33,7 @@ import ru.tutko.micro.logibot.telegram.repository.OrganizationRepository
 import ru.tutko.micro.logibot.telegram.repository.RoleRepository
 import ru.tutko.micro.logibot.telegram.repository.TableColumnRepository
 import ru.tutko.micro.logibot.telegram.repository.TableDataMetadataRepository
+import ru.tutko.micro.logibot.telegram.repository.UserOrganizationLinkRepository
 import ru.tutko.micro.logibot.telegram.repository.UserRepository
 import ru.tutko.micro.logibot.telegram.service.TableService
 import ru.tutko.micro.logibot.telegram.service.mongo.DynamicCollectionService
@@ -49,7 +52,7 @@ class TableServiceImpl(
 	private val tableDataMetadataRepository: TableDataMetadataRepository,
 	private val tableDataMetadatumMapper: TableDataMetadatumMapper,
 
-	private val dynamicCollectionService: DynamicCollectionService,
+	private val userOrganizationLinkRepository: UserOrganizationLinkRepository,
 
 	private val organizationRepository: OrganizationRepository,
 	private val organizationMapper: OrganizationMapper,
@@ -79,16 +82,50 @@ class TableServiceImpl(
 		return dataTableMapper.toDto(table)
 	}
 
+	@Transactional
+	override fun getTableByUser(externalUserId: Long, page: Int, size: Int): Page<DataTableDto> {
+		val pageable = PageRequest.of(page, size)
+		val user = userRepository.findByExternalUserId(externalUserId).orElseThrow { UserNotFoundException("Пользователь не найден") }
+
+		val tables = dataTableRepository.findByOrganization_UserOrganizationLinks_User(user, pageable)
+
+		return tables.map { dataTableMapper.toDto(it) }
+	}
+
+	@Transactional
 	override fun getTablesByOrganizationIdAndUserId(
 		organizationId: Long,
 		userId: Long,
 		page: Int,
 		size: Int
 	): Page<DataTableDto> {
-		val organization = organizationRepository.findById(organizationId).orElseThrow { OrganizationNotFoundException("Организация не найдена") }
-		val user = userRepository.findByExternalUserId(userId).orElseThrow { UserNotFoundException("Пользователь не найден") }
-		TODO("Not yet implemented")
+		val pageable = PageRequest.of(page, size)
+
+		val userOrgLink = userOrganizationLinkRepository
+			.findById_OrganizationIdAndUser_ExternalUserId(organizationId, userId)
+			.orElseThrow { NotFoundException("Связь Пользователь-Организация не найдена") }
+
+		val role = userOrgLink.role ?: throw NotFoundException("У пользователя нет роли")
+
+		val hasOrgPermission = role.roleOrganizationPermissions.any {
+			it.permission == PermissionAccessEnum.VIEW_TABLES || it.permission == PermissionAccessEnum.CREATOR
+		}
+
+		if (hasOrgPermission) {
+			return dataTableRepository
+				.findByOrganization_Id(organizationId, pageable)
+				.map { dataTableMapper.toDto(it) }
+		}
+
+		val tableIds = role.roleTablePermissions
+			.filter { it.permission == TablePermissionAccessEnum.VIEW_TABLE || it.permission == TablePermissionAccessEnum.CREATOR }
+			.mapNotNull { it.table?.id }
+
+		if (tableIds.isEmpty()) return Page.empty(pageable)
+
+		return dataTableRepository.findByIdIn(tableIds, pageable).map { dataTableMapper.toDto(it) }
 	}
+
 
 	@Transactional
 	override fun createTable(

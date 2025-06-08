@@ -8,7 +8,8 @@ enum class CommandEnum(val value: String) {
     HELP("/help"),
     SETTINGS("/settings"),
     CANCEL("/cancel"),
-    JOIN("/join")
+    JOIN("/join"),
+    TABLE("/table"),
 
     ;
 }
