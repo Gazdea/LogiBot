@@ -60,7 +60,7 @@ class CreateOrganizationHandler(
 				SendMessage().apply {
 					chatId = request.chatId.toString()
 					text =
-						"Организация $organizationName создана!\nДля продолжения работы с ботом создайте групповой чат и пригласите туда меня"
+						"Организация $organizationName создана!\nТеперь вы можете пригласить сотрудников\nСоздавать и заполнять таблицы\nИ выгружать отчеты"
 					replyMarkup = buttons
 				}
 			)

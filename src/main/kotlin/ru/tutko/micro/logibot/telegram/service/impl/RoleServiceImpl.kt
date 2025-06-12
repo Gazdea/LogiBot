@@ -142,28 +142,35 @@ class RoleServiceImpl(
 		val role = roleRepository.findById(roleId).orElseThrow { NotFoundException("Роль не найдена") }
 		val organization = organizationRepository.findById(organizationId).orElseThrow { NotFoundException("Организация не найдена") }
 
-		val existing = roleOrganizationPermissionRepository.findByRoleAndOrganizationAndPermission(
-			role, organization, permission
-		)
+		val existing = roleOrganizationPermissionRepository.findByRoleAndOrganizationAndPermission(role, organization, permission)
 
 		return if (existing != null) {
+			// Удаляем только само право (имплицитные права не трогаем)
 			roleOrganizationPermissionRepository.delete(existing)
 			false
 		} else {
-			val entity = RoleOrganizationPermission().apply {
-				this.id = RoleOrganizationPermissionId().apply {
-					this.organizationId = organization.id
-					this.roleId = role.id
-					this.permission = permission
+			// Добавляем само право + все вытекающие из него
+			val permissionsToAdd = PermissionAccessEnum.normalizePermissions(setOf(permission))
+			for (perm in permissionsToAdd) {
+				val alreadyExists = roleOrganizationPermissionRepository.findByRoleAndOrganizationAndPermission(role, organization, perm)
+				if (alreadyExists == null) {
+					val entity = RoleOrganizationPermission().apply {
+						this.id = RoleOrganizationPermissionId().apply {
+							this.organizationId = organization.id
+							this.roleId = role.id
+							this.permission = perm
+						}
+						this.role = role
+						this.organization = organization
+						this.permission = perm
+					}
+					roleOrganizationPermissionRepository.save(entity)
 				}
-				this.role = role
-				this.organization = organization
-				this.permission = permission
 			}
-			roleOrganizationPermissionRepository.save(entity)
 			true
 		}
 	}
+
 
 	@Transactional
 	override fun updateRolePermissionByTableId(
@@ -174,27 +181,34 @@ class RoleServiceImpl(
 		val role = roleRepository.findById(roleId).orElseThrow { NotFoundException("Роль не найдена") }
 		val table = dataTableRepository.findById(tableId).orElseThrow { NotFoundException("Таблица не найдена") }
 
-		val existing = roleTablePermissionRepository.findByRoleAndTableAndPermission(
-			role, table, permission
-		)
+		val existing = roleTablePermissionRepository.findByRoleAndTableAndPermission(role, table, permission)
 
 		return if (existing != null) {
+			// Удаляем только само право, не затрагивая подразумеваемые
 			roleTablePermissionRepository.delete(existing)
 			false
 		} else {
-			val entity = RoleTablePermission().apply {
-				this.id = RoleTablePermissionId().apply {
-					this.tableId = table.id
-					this.roleId = role.id
-					this.permission = permission
+			// Добавляем само право + все подразумеваемые
+			val permissionsToAdd = TablePermissionAccessEnum.normalizePermissions(setOf(permission))
+			for (perm in permissionsToAdd) {
+				val alreadyExists = roleTablePermissionRepository.findByRoleAndTableAndPermission(role, table, perm)
+				if (alreadyExists == null) {
+					val entity = RoleTablePermission().apply {
+						this.id = RoleTablePermissionId().apply {
+							this.tableId = table.id
+							this.roleId = role.id
+							this.permission = perm
+						}
+						this.role = role
+						this.table = table
+						this.permission = perm
+					}
+					roleTablePermissionRepository.save(entity)
 				}
-				this.role = role
-				this.table = table
-				this.permission = permission
 			}
-			roleTablePermissionRepository.save(entity)
 			true
 		}
 	}
+
 
 }

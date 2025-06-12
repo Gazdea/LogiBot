@@ -31,6 +31,17 @@ interface TableService {
 	fun getTable(tableId: Long): DataTableDto
 
 	/**
+	 * Возвращает список таблиц, доступных указанному пользователю.
+	 *
+	 * @param externalUserId ID пользователя
+	 * @param page страница.
+	 * @param size кол-во элементов на странице дефолт 8.
+	 *
+	 * @return Список DTO таблиц.
+	 */
+	fun getTableByUser(externalUserId: Long, page: Int, size: Int = 8): Page<DataTableDto>
+
+	/**
 	 * Возвращает список таблиц, доступных указанному пользователю в рамках организации.
 	 *
 	 * @param organizationId ID организации.
