@@ -76,7 +76,3 @@ docker-compose up --build -d
 
     Telegram: @Gazdea
     Автор: Mikhail Tutko
-
-📜 Лицензия
-
-Этот проект распространяется под лицензией MIT.
